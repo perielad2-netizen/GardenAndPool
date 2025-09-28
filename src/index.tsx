@@ -26,18 +26,18 @@ app.use(renderer)
 app.get('/', (c) => {
   return c.render(
     <main className="pb-24 sm:pb-0">
-      <header className="sticky top-0 z-30 backdrop-blur bg-white/15 border-b border-white/20">
+      <header className="sticky top-0 z-30 backdrop-blur bg-white/10 border-b border-white/20">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-white/30 shadow-inner flex items-center justify-center text-white">
-              <i className="fas fa-water"></i>
+            <div className="w-11 h-11 rounded-2xl bg-white/30 shadow-inner flex items-center justify-center text-white">
+              <i className="fas fa-water text-lg"></i>
             </div>
             <div className="leading-tight">
-              <div className="text-white font-bold">מים <span className="text-green-300">וטבע</span></div>
-              <div className="text-white/80 text-sm">שירותי בריכות, גינון ונקיון מקצועי</div>
+              <div className="text-white font-extrabold text-xl tracking-tight drop-shadow-sm">מים <span className="text-green-300">וטבע</span></div>
+              <div className="text-white/85 text-[13px]">שירותי בריכות, גינון ונקיון מקצועי</div>
             </div>
           </div>
-          <nav className="hidden sm:flex items-center gap-4 text-white/90 text-sm">
+          <nav className="hidden sm:flex items-center gap-5 text-white/90 text-sm">
             <a href="#services" className="hover:text-white transition">שירותים</a>
             <a href="#plans" className="hover:text-white transition">מנויים</a>
             <a href="#contact" className="hover:text-white transition">צור קשר</a>
@@ -51,7 +51,7 @@ app.get('/', (c) => {
           <div className="absolute top-1/2 right-0 w-96 h-96 bg-cyan-200/30 rounded-full blur-3xl"></div>
         </div>
         <div className="max-w-5xl mx-auto px-4 py-10">
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-white drop-shadow-sm mb-2">הכל במקום אחד</h1>
+          <h1 className="text-[2rem] sm:text-[2.6rem] font-extrabold text-white drop-shadow-sm mb-2">הכל במקום אחד</h1>
           <p className="text-white/90 mb-6">בריכות • גינון • ניקיון — פתרון מקצועי ומיידי.</p>
           <div className="flex gap-3">
             <a href="#diagnosis" className="inline-flex items-center gap-2 bg-white text-blue-700 px-4 py-2 rounded-lg shadow hover:bg-slate-50 transition">
@@ -159,7 +159,7 @@ app.get('/', (c) => {
                   { id: 'vip', name: 'מנוי VIP', price: '₪15000/שנה', features: ['כולל חומרים', 'הדברה', 'שטיפת רכב 1x/שבוע'] },
                   { id: 'premium', name: 'מנוי פרימיום', price: '₪2500/חודש', features: ['כולל הכל בריכה וגינון', 'ביקור שבועי'] },
                 ].map((p) => (
-                  <div key={p.id} className="rounded-2xl border bg-white p-5 shadow-sm">
+                  <div key={p.id} className="plan-card p-5">
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="font-bold text-lg">{p.name}</h3>
                       <span className="text-blue-700 font-semibold">{p.price}</span>
@@ -213,7 +213,7 @@ app.get('/', (c) => {
               { name: 'מנוי VIP', price: '₪15000/שנה', features: ['כולל חומרים', 'הדברה', 'שטיפת רכב 1x/שבוע'] },
               { name: 'מנוי פרימיום', price: '₪2500/חודש', features: ['כולל הכל בריכה וגינון', 'ביקור שבועי'] },
             ].map((p) => (
-              <div key={p.name} className="rounded-2xl border bg-white p-5 shadow-sm">
+              <div key={p.name} className="plan-card p-5">
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="font-bold text-lg">{p.name}</h3>
                   <span className="text-blue-700 font-semibold">{p.price}</span>
