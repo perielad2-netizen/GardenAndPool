@@ -10,6 +10,8 @@ type Bindings = {
   STRIPE_WEBHOOK_SECRET?: string
   AUTH_SECRET?: string
   PUBLIC_BASE_URL?: string
+  PUBLIC_SUPABASE_URL?: string
+  PUBLIC_SUPABASE_ANON_KEY?: string
 }
 
 const app = new Hono<{ Bindings: Bindings }>()
@@ -288,6 +290,10 @@ app.get('/api/config/public', (c) => {
   return c.json({
     name: 'מים וטבע',
     plans: ['basic', 'monthly', 'yearly', 'vip', 'premium'],
+    supabase: {
+      url: c.env.PUBLIC_SUPABASE_URL || '',
+      anon: c.env.PUBLIC_SUPABASE_ANON_KEY || ''
+    }
   })
 })
 
