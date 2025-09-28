@@ -1,0 +1,40 @@
+/* Base water theme, Hebrew RTL ready */
+html[dir="rtl"] body { direction: rtl; }
+
+/***** Glassmorphism helpers *****/
+.glass {
+  background: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.12);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 16px;
+}
+
+/* Subtle wave gradient animation */
+.water-gradient {
+  background: linear-gradient(180deg, #3B82F6 0%, #06B6D4 50%, #3B82F6 100%);
+  background-size: 100% 200%;
+  animation: waveShift 12s ease-in-out infinite;
+}
+
+@keyframes waveShift {
+  0% { background-position: 50% 0%; }
+  50% { background-position: 50% 100%; }
+  100% { background-position: 50% 0%; }
+}
+
+/* Buttons */
+.btn { @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition; }
+.btn-primary { @apply bg-blue-600 text-white hover:bg-blue-700; }
+.btn-accent { @apply bg-emerald-500 text-white hover:bg-emerald-600; }
+
+/* Cards */
+.card { @apply bg-white rounded-2xl shadow p-5 border; }
+
+/* Typography */
+.heading { @apply text-2xl font-bold; }
+
+/* Utility fallbacks if Tailwind is not loaded for some reason */
+.no-tailwind .btn { padding: 0.5rem 1rem; border-radius: 0.5rem; }
+.no-tailwind .card { border-radius: 1rem; padding: 1.25rem; background: #fff; border: 1px solid #e5e7eb; }
