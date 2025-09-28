@@ -1217,6 +1217,163 @@ app.post('/api/auth/logout', async (c) => {
   }
 })
 
+// User Profile API Routes
+app.get('/api/user/profile', async (c) => {
+  try {
+    const authHeader = c.req.header('Authorization')
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return c.json({ error: 'Authentication required' }, 401)
+    }
+    
+    // TODO: Verify session token with Supabase
+    // For now, return mock user profile
+    const mockProfile = {
+      id: 'user_12345',
+      email: 'user@example.com',
+      full_name: 'משתמש לדוגמה',
+      phone: '052-123-4567',
+      address: 'רחוב הדוגמה 123, תל אביב',
+      subscription_plan: 'monthly',
+      subscription_status: 'active',
+      properties: [
+        {
+          id: 'prop_1',
+          name: 'בית ראשי',
+          address: 'רחוב הדוגמה 123, תל אביב',
+          pool_size: '8x4 מטר',
+          garden_size: '150 מ״ר'
+        }
+      ],
+      upcoming_appointments: [
+        {
+          id: 'app_1',
+          service_type: 'pool_maintenance',
+          scheduled_date: '2024-10-01T10:00:00Z',
+          technician_name: 'דוד הטכנאי'
+        }
+      ]
+    }
+    
+    return c.json({
+      success: true,
+      profile: mockProfile
+    })
+    
+  } catch (error) {
+    console.error('Profile fetch error:', error)
+    return c.json({ error: 'Internal server error' }, 500)
+  }
+})
+
+app.put('/api/user/profile', async (c) => {
+  try {
+    const authHeader = c.req.header('Authorization')
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return c.json({ error: 'Authentication required' }, 401)
+    }
+    
+    const { full_name, phone, address } = await c.req.json()
+    
+    // Validation
+    if (!full_name || !phone) {
+      return c.json({ error: 'Name and phone are required' }, 400)
+    }
+    
+    // TODO: Update user profile in Supabase
+    // For now, return mock success response
+    return c.json({
+      success: true,
+      message: 'Profile updated successfully',
+      profile: {
+        id: 'user_12345',
+        email: 'user@example.com',
+        full_name,
+        phone,
+        address: address || '',
+        updated_at: new Date().toISOString()
+      }
+    })
+    
+  } catch (error) {
+    console.error('Profile update error:', error)
+    return c.json({ error: 'Internal server error' }, 500)
+  }
+})
+
+app.get('/api/user/appointments', async (c) => {
+  try {
+    const authHeader = c.req.header('Authorization')
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return c.json({ error: 'Authentication required' }, 401)
+    }
+    
+    // TODO: Fetch user appointments from Supabase
+    // For now, return mock appointments
+    const mockAppointments = [
+      {
+        id: 'app_1',
+        service_type: 'pool_maintenance',
+        service_name: 'תחזוקת בריכה שוטפת',
+        scheduled_date: '2024-10-01T10:00:00Z',
+        status: 'confirmed',
+        technician_name: 'דוד הטכנאי',
+        technician_phone: '052-111-2222'
+      },
+      {
+        id: 'app_2',
+        service_type: 'garden_maintenance',
+        service_name: 'גיזום וטיפוח גינה',
+        scheduled_date: '2024-10-03T14:00:00Z',
+        status: 'pending',
+        technician_name: 'שרה הגננת',
+        technician_phone: '052-333-4444'
+      }
+    ]
+    
+    return c.json({
+      success: true,
+      appointments: mockAppointments
+    })
+    
+  } catch (error) {
+    console.error('Appointments fetch error:', error)
+    return c.json({ error: 'Internal server error' }, 500)
+  }
+})
+
+app.get('/api/user/subscriptions', async (c) => {
+  try {
+    const authHeader = c.req.header('Authorization')
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return c.json({ error: 'Authentication required' }, 401)
+    }
+    
+    // TODO: Fetch user subscriptions from Supabase
+    // For now, return mock subscriptions
+    const mockSubscriptions = [
+      {
+        id: 'sub_1',
+        plan_name: 'מנוי חודשי',
+        plan_type: 'monthly',
+        price: 1000,
+        status: 'active',
+        next_billing_date: '2024-10-15T00:00:00Z',
+        services: ['pool_maintenance'],
+        visits_per_month: 4
+      }
+    ]
+    
+    return c.json({
+      success: true,
+      subscriptions: mockSubscriptions
+    })
+    
+  } catch (error) {
+    console.error('Subscriptions fetch error:', error)
+    return c.json({ error: 'Internal server error' }, 500)
+  }
+})
+
 app.get('/api/services', (c) => {
   return c.json({
     services: [
