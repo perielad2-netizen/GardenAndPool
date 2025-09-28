@@ -131,24 +131,168 @@ export interface EquipmentItem {
   updated_at: string
 }
 
-// Supabase client configuration
-const supabaseUrl = process.env.SUPABASE_URL || 'https://your-project.supabase.co'
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || 'your-anon-key'
+// Supabase client configuration for Cloudflare Workers
+// Note: In Cloudflare Workers, environment variables come from the context
+let supabaseClient: any = null;
 
-// Create Supabase client
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true
+export function createSupabaseClient(env?: any) {
+  const supabaseUrl = env?.SUPABASE_URL || 'https://your-project.supabase.co';
+  const supabaseAnonKey = env?.SUPABASE_ANON_KEY || 'your-anon-key';
+  
+  return createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      autoRefreshToken: true,
+      persistSession: false, // Disable session persistence in Workers environment
+      detectSessionInUrl: false
+    }
+  });
+}
+
+// Create default client for development
+export const supabase = createSupabaseClient();
+
+// Authentication service for Supabase Auth
+export class AuthService {
+  private supabase: any;
+  
+  constructor(env?: any) {
+    this.supabase = createSupabaseClient(env);
   }
-})
+
+  async signUp(email: string, password: string, userData: {firstName: string, lastName: string, phone: string}) {
+    try {
+      const { data, error } = await this.supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: `${userData.firstName} ${userData.lastName}`,
+            phone: userData.phone,
+            first_name: userData.firstName,
+            last_name: userData.lastName
+          }
+        }
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      // If user is created, also create profile
+      if (data.user) {
+        const profileData = {
+          id: data.user.id,
+          full_name: `${userData.firstName} ${userData.lastName}`,
+          phone: userData.phone,
+          role: 'customer' as const
+        };
+
+        await DatabaseService.createProfile(profileData, this.supabase);
+      }
+
+      return { success: true, user: data.user, session: data.session };
+    } catch (error) {
+      console.error('Auth signup error:', error);
+      throw error;
+    }
+  }
+
+  async signIn(email: string, password: string) {
+    try {
+      const { data, error } = await this.supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      // Get user profile
+      let profile = null;
+      if (data.user) {
+        profile = await DatabaseService.getProfile(data.user.id, this.supabase);
+      }
+
+      return { 
+        success: true, 
+        user: data.user, 
+        session: data.session,
+        profile 
+      };
+    } catch (error) {
+      console.error('Auth signin error:', error);
+      throw error;
+    }
+  }
+
+  async signOut() {
+    try {
+      const { error } = await this.supabase.auth.signOut();
+      if (error) {
+        throw new Error(error.message);
+      }
+      return { success: true };
+    } catch (error) {
+      console.error('Auth signout error:', error);
+      throw error;
+    }
+  }
+
+  async resetPassword(email: string) {
+    try {
+      const { error } = await this.supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${globalThis.location?.origin}/reset-password`,
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error('Auth reset password error:', error);
+      throw error;
+    }
+  }
+
+  async getUser() {
+    try {
+      const { data: { user }, error } = await this.supabase.auth.getUser();
+      
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      return user;
+    } catch (error) {
+      console.error('Auth get user error:', error);
+      return null;
+    }
+  }
+
+  async verifySession(sessionToken: string) {
+    try {
+      const { data: { user }, error } = await this.supabase.auth.getUser(sessionToken);
+      
+      if (error) {
+        return null;
+      }
+
+      return user;
+    } catch (error) {
+      console.error('Auth verify session error:', error);
+      return null;
+    }
+  }
+}
 
 // Database service functions
 export class DatabaseService {
   // Profiles
-  static async getProfile(userId: string): Promise<Profile | null> {
-    const { data, error } = await supabase
+  static async getProfile(userId: string, client?: any): Promise<Profile | null> {
+    const supabaseClient = client || supabase;
+    const { data, error } = await supabaseClient
       .from('profiles')
       .select('*')
       .eq('id', userId)
@@ -161,8 +305,24 @@ export class DatabaseService {
     return data
   }
 
-  static async updateProfile(userId: string, updates: Partial<Profile>): Promise<Profile | null> {
-    const { data, error } = await supabase
+  static async createProfile(profileData: Omit<Profile, 'created_at' | 'updated_at'>, client?: any): Promise<Profile | null> {
+    const supabaseClient = client || supabase;
+    const { data, error } = await supabaseClient
+      .from('profiles')
+      .insert(profileData)
+      .select()
+      .single()
+    
+    if (error) {
+      console.error('Error creating profile:', error)
+      return null
+    }
+    return data
+  }
+
+  static async updateProfile(userId: string, updates: Partial<Profile>, client?: any): Promise<Profile | null> {
+    const supabaseClient = client || supabase;
+    const { data, error } = await supabaseClient
       .from('profiles')
       .update(updates)
       .eq('id', userId)
@@ -177,8 +337,9 @@ export class DatabaseService {
   }
 
   // Properties
-  static async getUserProperties(userId: string): Promise<Property[]> {
-    const { data, error } = await supabase
+  static async getUserProperties(userId: string, client?: any): Promise<Property[]> {
+    const supabaseClient = client || supabase;
+    const { data, error } = await supabaseClient
       .from('properties')
       .select('*')
       .eq('owner_id', userId)
@@ -251,8 +412,9 @@ export class DatabaseService {
   }
 
   // Appointments
-  static async getUserAppointments(userId: string): Promise<Appointment[]> {
-    const { data, error } = await supabase
+  static async getUserAppointments(userId: string, client?: any): Promise<Appointment[]> {
+    const supabaseClient = client || supabase;
+    const { data, error } = await supabaseClient
       .from('appointments')
       .select('*, properties(*), profiles!appointments_technician_id_fkey(*)')
       .or(`customer_id.eq.${userId},technician_id.eq.${userId}`)
@@ -324,94 +486,3 @@ export class DatabaseService {
   }
 }
 
-// Authentication helper functions
-export class AuthService {
-  static async signUp(email: string, password: string, fullName: string, phone?: string) {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName,
-          phone: phone
-        }
-      }
-    })
-
-    if (error) {
-      console.error('Error signing up:', error)
-      return { user: null, error }
-    }
-
-    // Create profile
-    if (data.user) {
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          id: data.user.id,
-          full_name: fullName,
-          phone: phone,
-          role: 'customer'
-        })
-
-      if (profileError) {
-        console.error('Error creating profile:', profileError)
-      }
-    }
-
-    return { user: data.user, error: null }
-  }
-
-  static async signIn(email: string, password: string) {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    })
-
-    if (error) {
-      console.error('Error signing in:', error)
-      return { user: null, error }
-    }
-
-    return { user: data.user, error: null }
-  }
-
-  static async signOut() {
-    const { error } = await supabase.auth.signOut()
-    if (error) {
-      console.error('Error signing out:', error)
-    }
-    return { error }
-  }
-
-  static async resetPassword(email: string) {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`
-    })
-
-    if (error) {
-      console.error('Error resetting password:', error)
-    }
-    return { error }
-  }
-
-  static async updatePassword(newPassword: string) {
-    const { error } = await supabase.auth.updateUser({
-      password: newPassword
-    })
-
-    if (error) {
-      console.error('Error updating password:', error)
-    }
-    return { error }
-  }
-
-  static async getCurrentUser() {
-    const { data: { user } } = await supabase.auth.getUser()
-    return user
-  }
-
-  static onAuthStateChange(callback: (event: string, session: any) => void) {
-    return supabase.auth.onAuthStateChange(callback)
-  }
-}

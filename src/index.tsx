@@ -1,8 +1,17 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { renderer } from './renderer'
+import { AuthService, DatabaseService, createSupabaseClient } from './lib/supabase'
 
-const app = new Hono()
+// Define the environment interface for Cloudflare Workers
+type Bindings = {
+  SUPABASE_URL: string
+  SUPABASE_ANON_KEY: string
+  SUPABASE_SERVICE_ROLE_KEY?: string
+  JWT_SECRET?: string
+}
+
+const app = new Hono<{ Bindings: Bindings }>()
 
 // Enable CORS for API routes
 app.use('/api/*', cors())
@@ -1121,32 +1130,69 @@ app.post('/api/auth/register', async (c) => {
     
     // Validation
     if (!email || !password || !firstName || !lastName || !phone) {
-      return c.json({ error: 'All fields are required' }, 400)
+      return c.json({ error: 'כל השדות נדרשים' }, 400)
     }
     
     if (password.length < 6) {
-      return c.json({ error: 'Password must be at least 6 characters' }, 400)
+      return c.json({ error: 'הסיסמה חייבת להכיל לפחות 6 תווים' }, 400)
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      return c.json({ error: 'כתובת אימייל לא תקינה' }, 400)
     }
     
-    // TODO: Implement actual Supabase registration
-    // For now, return mock success response
-    const mockUser = {
-      id: `user_${Date.now()}`,
-      email,
-      full_name: `${firstName} ${lastName}`,
-      phone,
-      created_at: new Date().toISOString()
+    // Check if Supabase is properly configured
+    const supabaseUrl = c.env?.SUPABASE_URL || '';
+    const supabaseKey = c.env?.SUPABASE_ANON_KEY || '';
+    
+    if (!supabaseUrl || !supabaseKey || supabaseUrl.includes('your-project') || supabaseKey.includes('your-')) {
+      // Fallback to mock registration when Supabase isn't configured
+      console.log('Supabase not configured, using mock registration');
+      const mockUser = {
+        id: `user_${Date.now()}`,
+        email,
+        full_name: `${firstName} ${lastName}`,
+        phone,
+        created_at: new Date().toISOString()
+      }
+      
+      return c.json({
+        success: true,
+        message: 'המשתמש נרשם בהצלחה (דמו מוד)',
+        user: mockUser
+      })
     }
+    
+    // Initialize Supabase with environment variables
+    const authService = new AuthService(c.env)
+    
+    // Register user with Supabase
+    const result = await authService.signUp(email, password, { firstName, lastName, phone })
     
     return c.json({
       success: true,
-      message: 'User registered successfully',
-      user: mockUser
+      message: 'המשתמש נרשם בהצלחה',
+      user: {
+        id: result.user?.id,
+        email: result.user?.email,
+        full_name: `${firstName} ${lastName}`,
+        phone,
+        created_at: result.user?.created_at
+      }
     })
     
   } catch (error) {
     console.error('Registration error:', error)
-    return c.json({ error: 'Internal server error' }, 500)
+    const errorMessage = error instanceof Error ? error.message : 'שגיאה פנימית במערכת'
+    
+    // Handle specific Supabase errors
+    if (errorMessage.includes('already registered')) {
+      return c.json({ error: 'משתמש עם אימייל זה כבר קיים במערכת' }, 409)
+    }
+    
+    return c.json({ error: errorMessage }, 500)
   }
 })
 
@@ -1156,28 +1202,60 @@ app.post('/api/auth/login', async (c) => {
     
     // Validation
     if (!email || !password) {
-      return c.json({ error: 'Email and password are required' }, 400)
+      return c.json({ error: 'אימייל וסיסמה נדרשים' }, 400)
     }
     
-    // TODO: Implement actual Supabase authentication
-    // For now, return mock success response
-    const mockUser = {
-      id: 'user_12345',
-      email,
-      full_name: 'משתמש לדוגמה',
-      phone: '052-123-4567'
+    // Check if Supabase is properly configured
+    const supabaseUrl = c.env?.SUPABASE_URL || '';
+    const supabaseKey = c.env?.SUPABASE_ANON_KEY || '';
+    
+    if (!supabaseUrl || !supabaseKey || supabaseUrl.includes('your-project') || supabaseKey.includes('your-')) {
+      // Fallback to mock login when Supabase isn't configured
+      console.log('Supabase not configured, using mock login');
+      const mockUser = {
+        id: 'user_12345',
+        email,
+        full_name: 'משתמש לדוגמה',
+        phone: '052-123-4567'
+      }
+      
+      return c.json({
+        success: true,
+        message: 'התחברת בהצלחה (דמו מוד)',
+        user: mockUser,
+        session_token: 'mock_session_token_' + Date.now()
+      })
     }
+    
+    // Initialize Supabase with environment variables
+    const authService = new AuthService(c.env)
+    
+    // Authenticate user with Supabase
+    const result = await authService.signIn(email, password)
     
     return c.json({
       success: true,
-      message: 'Login successful',
-      user: mockUser,
-      session_token: 'mock_session_token_' + Date.now()
+      message: 'התחברת בהצלחה',
+      user: {
+        id: result.user?.id,
+        email: result.user?.email,
+        full_name: result.profile?.full_name || result.user?.user_metadata?.full_name || 'משתמש',
+        phone: result.profile?.phone || result.user?.user_metadata?.phone || ''
+      },
+      session_token: result.session?.access_token,
+      refresh_token: result.session?.refresh_token
     })
     
   } catch (error) {
     console.error('Login error:', error)
-    return c.json({ error: 'Internal server error' }, 500)
+    const errorMessage = error instanceof Error ? error.message : 'שגיאה פנימית במערכת'
+    
+    // Handle specific Supabase auth errors
+    if (errorMessage.includes('Invalid login credentials')) {
+      return c.json({ error: 'אימייל או סיסמה שגויים' }, 401)
+    }
+    
+    return c.json({ error: errorMessage }, 500)
   }
 })
 
@@ -1187,76 +1265,167 @@ app.post('/api/auth/forgot-password', async (c) => {
     
     // Validation
     if (!email) {
-      return c.json({ error: 'Email is required' }, 400)
+      return c.json({ error: 'אימייל נדרש' }, 400)
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      return c.json({ error: 'כתובת אימייל לא תקינה' }, 400)
     }
     
-    // TODO: Implement actual Supabase password reset
-    // For now, return mock success response
+    // Initialize Supabase with environment variables
+    const authService = new AuthService(c.env)
+    
+    // Send password reset email
+    await authService.resetPassword(email)
+    
     return c.json({
       success: true,
-      message: 'Password reset email sent successfully'
+      message: 'קישור לאיפוס סיסמה נשלח לאימייל שלך'
     })
     
   } catch (error) {
     console.error('Password reset error:', error)
-    return c.json({ error: 'Internal server error' }, 500)
+    const errorMessage = error instanceof Error ? error.message : 'שגיאה פנימית במערכת'
+    return c.json({ error: errorMessage }, 500)
   }
 })
 
 app.post('/api/auth/logout', async (c) => {
   try {
-    // TODO: Implement actual Supabase logout
+    // Initialize Supabase with environment variables
+    const authService = new AuthService(c.env)
+    
+    // Sign out user from Supabase
+    await authService.signOut()
+    
     return c.json({
       success: true,
-      message: 'Logout successful'
+      message: 'התנתקת בהצלחה'
     })
     
   } catch (error) {
     console.error('Logout error:', error)
-    return c.json({ error: 'Internal server error' }, 500)
+    const errorMessage = error instanceof Error ? error.message : 'שגיאה פנימית במערכת'
+    return c.json({ error: errorMessage }, 500)
   }
 })
+
+// Helper function to verify authentication
+async function verifyAuth(c: any) {
+  const authHeader = c.req.header('Authorization')
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return null
+  }
+
+  const token = authHeader.substring(7)
+  
+  // Check if this is a mock session token
+  if (token.startsWith('mock_session_token_')) {
+    return {
+      id: 'user_12345',
+      email: 'user@example.com'
+    }
+  }
+  
+  // Check if Supabase is properly configured
+  const supabaseUrl = c.env?.SUPABASE_URL || '';
+  const supabaseKey = c.env?.SUPABASE_ANON_KEY || '';
+  
+  if (!supabaseUrl || !supabaseKey || supabaseUrl.includes('your-project') || supabaseKey.includes('your-')) {
+    // Return mock user for demo purposes when Supabase isn't configured
+    return {
+      id: 'user_12345',
+      email: 'user@example.com'
+    }
+  }
+  
+  const authService = new AuthService(c.env)
+  
+  try {
+    const user = await authService.verifySession(token)
+    return user
+  } catch (error) {
+    console.error('Auth verification error:', error)
+    return null
+  }
+}
 
 // User Profile API Routes
 app.get('/api/user/profile', async (c) => {
   try {
-    const authHeader = c.req.header('Authorization')
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return c.json({ error: 'Authentication required' }, 401)
-    }
+    // Check if Supabase is properly configured
+    const supabaseUrl = c.env?.SUPABASE_URL || '';
+    const supabaseKey = c.env?.SUPABASE_ANON_KEY || '';
     
-    // TODO: Verify session token with Supabase
-    // For now, return mock user profile
-    const mockProfile = {
-      id: 'user_12345',
-      email: 'user@example.com',
-      full_name: 'משתמש לדוגמה',
-      phone: '052-123-4567',
-      address: 'רחוב הדוגמה 123, תל אביב',
-      subscription_plan: 'monthly',
-      subscription_status: 'active',
-      properties: [
-        {
+    if (!supabaseUrl || !supabaseKey || supabaseUrl.includes('your-project') || supabaseKey.includes('your-')) {
+      // Fallback to mock profile when Supabase isn't configured
+      console.log('Supabase not configured, using mock profile');
+      const mockProfile = {
+        id: 'user_12345',
+        email: 'user@example.com',
+        full_name: 'משתמש לדוגמה',
+        phone: '052-123-4567',
+        address: 'רחוב הדוגמה 123, תל אביב',
+        pool_type: 'בטון',
+        pool_size: '8x4 מטר',
+        garden_size: '150 מ״ר',
+        role: 'customer',
+        properties: [{
           id: 'prop_1',
           name: 'בית ראשי',
           address: 'רחוב הדוגמה 123, תל אביב',
           pool_size: '8x4 מטר',
           garden_size: '150 מ״ר'
-        }
-      ],
-      upcoming_appointments: [
-        {
+        }],
+        upcoming_appointments: [{
           id: 'app_1',
           service_type: 'pool_maintenance',
           scheduled_date: '2024-10-01T10:00:00Z',
           technician_name: 'דוד הטכנאי'
-        }
-      ]
+        }]
+      }
+      
+      return c.json({
+        success: true,
+        profile: mockProfile
+      })
     }
+
+    // Verify authentication
+    const user = await verifyAuth(c)
+    if (!user) {
+      return c.json({ error: 'אימות נדרש' }, 401)
+    }
+    
+    // Get user profile from Supabase
+    const supabaseClient = createSupabaseClient(c.env)
+    const profile = await DatabaseService.getProfile(user.id, supabaseClient)
+    
+    if (!profile) {
+      return c.json({ error: 'פרופיל משתמש לא נמצא' }, 404)
+    }
+
+    // Get user properties and appointments
+    const properties = await DatabaseService.getUserProperties(user.id, supabaseClient)
+    const appointments = await DatabaseService.getUserAppointments(user.id, supabaseClient)
     
     return c.json({
       success: true,
-      profile: mockProfile
+      profile: {
+        id: profile.id,
+        email: user.email,
+        full_name: profile.full_name,
+        phone: profile.phone || '',
+        address: profile.address || '',
+        pool_type: profile.pool_type,
+        pool_size: profile.pool_size,
+        garden_size: profile.garden_size,
+        role: profile.role,
+        properties: properties || [],
+        upcoming_appointments: appointments?.slice(0, 3) || [] // Show only next 3 appointments
+      }
     })
     
   } catch (error) {
