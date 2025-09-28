@@ -28,11 +28,47 @@ const App = () => {
                 <p class="text-sm text-gray-600">שירותי בריכות, גינון ונקיון מקצועי</p>
               </div>
             </div>
-            <div class="flex items-center gap-2">
-              <button class="btn-water text-white px-4 py-2 rounded-lg text-sm">
+            <div class="flex items-center gap-3 relative">
+              <button class="btn-water text-white px-4 py-2 rounded-lg text-sm login-trigger">
                 <i class="fas fa-user-plus ml-2"></i>
                 התחברות
               </button>
+              <div id="user-menu" class="hidden">
+                <button class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 transition-colors" id="user-menu-button">
+                  <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center">
+                    <i class="fas fa-user text-white text-sm"></i>
+                  </div>
+                  <span class="font-medium text-gray-800 hidden md:block" id="user-name">שם המשתמש</span>
+                  <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
+                </button>
+
+                <div class="absolute left-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 hidden z-50" id="user-menu-dropdown">
+                  <div class="p-2">
+                    <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 transition-colors">
+                      <i class="fas fa-user text-blue-500"></i>
+                      <span>פרופיל אישי</span>
+                    </a>
+                    <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 transition-colors">
+                      <i class="fas fa-calendar text-green-500"></i>
+                      <span>התורים שלי</span>
+                    </a>
+                    <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 transition-colors">
+                      <i class="fas fa-credit-card text-purple-500"></i>
+                      <span>המנויים שלי</span>
+                    </a>
+                    <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 transition-colors">
+                      <i class="fas fa-file-invoice text-orange-500"></i>
+                      <span>חשבוניות</span>
+                    </a>
+                    <div class="border-t border-gray-200 mt-2 pt-2">
+                      <button class="flex items-center gap-3 p-3 rounded-lg hover:bg-red-50 hover:text-red-600 transition-colors w-full text-right" id="logout-btn">
+                        <i class="fas fa-sign-out-alt text-red-500"></i>
+                        <span>התנתק</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -848,8 +884,213 @@ const App = () => {
         </div>
       </footer>
 
+      {/* Authentication Modals */}
+      <div id="login-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full max-h-96 overflow-y-auto">
+          <div class="p-6">
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-2xl font-bold text-gray-800 hebrew-title">התחברות למערכת</h2>
+              <button class="modal-close text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+            
+            <form id="login-form" class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2 text-right">אימייל</label>
+                <input
+                  type="email"
+                  id="login-email"
+                  class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:outline-none text-right"
+                  placeholder="הכניסו את האימייל שלכם"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2 text-right">סיסמה</label>
+                <input
+                  type="password"
+                  id="login-password"
+                  class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:outline-none text-right"
+                  placeholder="הכניסו את הסיסמה שלכם"
+                  required
+                />
+              </div>
+              
+              <div class="flex items-center justify-between text-sm">
+                <a href="#" class="text-blue-600 hover:text-blue-800 forgot-password-trigger">שכחתי סיסמה</a>
+                <label class="flex items-center gap-2">
+                  <input type="checkbox" class="rounded" />
+                  <span class="text-gray-600">זכור אותי</span>
+                </label>
+              </div>
+              
+              <button
+                type="submit"
+                class="w-full btn-water text-white py-3 rounded-xl font-medium text-lg"
+              >
+                <i class="fas fa-sign-in-alt ml-2"></i>
+                התחברות
+              </button>
+              
+              <div class="text-center">
+                <span class="text-gray-600">אין לכם חשבון? </span>
+                <a href="#" class="text-blue-600 hover:text-blue-800 font-medium register-trigger">הרשמה כאן</a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      {/* Registration Modal */}
+      <div id="register-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full max-h-96 overflow-y-auto">
+          <div class="p-6">
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-2xl font-bold text-gray-800 hebrew-title">הרשמה למערכת</h2>
+              <button class="modal-close text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+            
+            <form id="register-form" class="space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2 text-right">שם פרטי</label>
+                  <input
+                    type="text"
+                    id="register-first-name"
+                    class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:outline-none text-right"
+                    placeholder="שם פרטי"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2 text-right">שם משפחה</label>
+                  <input
+                    type="text"
+                    id="register-last-name"
+                    class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:outline-none text-right"
+                    placeholder="שם משפחה"
+                    required
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2 text-right">אימייל</label>
+                <input
+                  type="email"
+                  id="register-email"
+                  class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:outline-none text-right"
+                  placeholder="הכניסו את האימייל שלכם"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2 text-right">טלפון</label>
+                <input
+                  type="tel"
+                  id="register-phone"
+                  class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:outline-none text-right"
+                  placeholder="052-123-4567"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2 text-right">סיסמה</label>
+                <input
+                  type="password"
+                  id="register-password"
+                  class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:outline-none text-right"
+                  placeholder="לפחות 6 תווים"
+                  minlength="6"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2 text-right">אימות סיסמה</label>
+                <input
+                  type="password"
+                  id="register-confirm-password"
+                  class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:outline-none text-right"
+                  placeholder="הכניסו שוב את הסיסמה"
+                  required
+                />
+              </div>
+              
+              <div class="flex items-center gap-2">
+                <input type="checkbox" id="register-terms" required class="rounded" />
+                <label for="register-terms" class="text-sm text-gray-600 text-right">
+                  אני מסכים/ה ל<a href="#" class="text-blue-600 hover:text-blue-800">תנאי השימוש</a> ו<a href="#" class="text-blue-600 hover:text-blue-800">מדיניות הפרטיות</a>
+                </label>
+              </div>
+              
+              <button
+                type="submit"
+                class="w-full btn-water text-white py-3 rounded-xl font-medium text-lg"
+              >
+                <i class="fas fa-user-plus ml-2"></i>
+                הרשמה למערכת
+              </button>
+              
+              <div class="text-center">
+                <span class="text-gray-600">יש לכם כבר חשבון? </span>
+                <a href="#" class="text-blue-600 hover:text-blue-800 font-medium login-trigger">התחברות כאן</a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      {/* Forgot Password Modal */}
+      <div id="forgot-password-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full">
+          <div class="p-6">
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-2xl font-bold text-gray-800 hebrew-title">שחזור סיסמה</h2>
+              <button class="modal-close text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+            
+            <div class="text-center mb-6">
+              <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-key text-white text-2xl"></i>
+              </div>
+              <p class="text-gray-600">הכניסו את כתובת האימייל שלכם ונשלח לכם קישור לשחזור הסיסמה</p>
+            </div>
+            
+            <form id="forgot-password-form" class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2 text-right">אימייל</label>
+                <input
+                  type="email"
+                  id="forgot-password-email"
+                  class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:outline-none text-right"
+                  placeholder="הכניסו את האימייל שלכם"
+                  required
+                />
+              </div>
+              
+              <button
+                type="submit"
+                class="w-full btn-water text-white py-3 rounded-xl font-medium text-lg"
+              >
+                <i class="fas fa-paper-plane ml-2"></i>
+                שליחת קישור שחזור
+              </button>
+              
+              <div class="text-center">
+                <a href="#" class="text-blue-600 hover:text-blue-800 login-trigger">חזרה להתחברות</a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
       {/* JavaScript for interactions */}
       <script src="/static/app.js"></script>
+      <script src="/static/auth.js"></script>
     </div>
   )
 }

@@ -16,7 +16,11 @@
     "git:status": "git status"
   },
   "dependencies": {
-    "hono": "^4.9.9"
+    "@supabase/auth-js": "^2.72.0",
+    "@supabase/supabase-js": "^2.58.0",
+    "bcryptjs": "^3.0.2",
+    "hono": "^4.9.9",
+    "jsonwebtoken": "^9.0.2"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250705.0",
