@@ -7,6 +7,7 @@
 
 ## Live URLs
 - **Production**: https://3000-ihdlkbro9nzx0ynge2jmt-6532622b.e2b.dev
+- **GitHub Repository**: https://github.com/perielad2-netizen/GardenAndPool
 - **API Health**: https://3000-ihdlkbro9nzx0ynge2jmt-6532622b.e2b.dev/api/health
 - **Services API**: https://3000-ihdlkbro9nzx0ynge2jmt-6532622b.e2b.dev/api/services
 - **Plans API**: https://3000-ihdlkbro9nzx0ynge2jmt-6532622b.e2b.dev/api/plans
