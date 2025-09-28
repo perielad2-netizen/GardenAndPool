@@ -1,18 +1,32 @@
 import { Hono } from 'hono'
+import { cors } from 'hono/cors'
 import { serveStatic } from 'hono/cloudflare-workers'
 import { renderer } from './renderer'
 
-const app = new Hono()
+// ---- Types for Cloudflare bindings (env secrets) ----
+type Bindings = {
+  OPENAI_API_KEY?: string
+  STRIPE_SECRET_KEY?: string
+  STRIPE_WEBHOOK_SECRET?: string
+  AUTH_SECRET?: string
+  PUBLIC_BASE_URL?: string
+}
+
+const app = new Hono<{ Bindings: Bindings }>()
 
 // Static assets from public/static
 app.use('/static/*', serveStatic({ root: './public' }))
 
+// Enable CORS for API (safe default)
+app.use('/api/*', cors())
+
 app.use(renderer)
 
+// ------------------- UI -------------------
 app.get('/', (c) => {
   return c.render(
-    <main>
-      <header className="sticky top-0 z-30 backdrop-blur bg-white/20 border-b border-white/20">
+    <main className="pb-24 sm:pb-0">
+      <header className="sticky top-0 z-30 backdrop-blur bg-white/15 border-b border-white/20">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-white/30 shadow-inner flex items-center justify-center text-white">
@@ -52,11 +66,11 @@ app.get('/', (c) => {
 
           <div className="mt-8 grid grid-cols-3 gap-3 text-center">
             <div className="bg-white/20 rounded-xl p-3 text-white">
-              <div className="text-2xl font-bold">10+</div>
+              <div className="text-2xl font-bold" data-counter data-target="10">0</div>
               <div className="text-sm">שנות ניסיון</div>
             </div>
             <div className="bg-white/20 rounded-xl p-3 text-white">
-              <div className="text-2xl font-bold">500+</div>
+              <div className="text-2xl font-bold" data-counter data-target="500">0</div>
               <div className="text-sm">לקוחות מרוצים</div>
             </div>
             <div className="bg-white/20 rounded-xl p-3 text-white">
@@ -70,20 +84,120 @@ app.get('/', (c) => {
       <section id="services" className="bg-white/60 backdrop-blur rounded-t-3xl -mt-2">
         <div className="max-w-5xl mx-auto px-4 py-10">
           <h2 className="text-2xl font-bold mb-6">שירותים</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+
+          {/* Chips (cleaner UI) */}
+          <div id="serviceChips" className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
             {[
-              { icon: 'fa-microscope', label: 'אבחון' },
-              { icon: 'fa-calendar-check', label: 'תיאום טכנאי' },
-              { icon: 'fa-toolbox', label: 'ציוד ותחזוקה' },
-              { icon: 'fa-water-ladder', label: 'בריכה' },
-              { icon: 'fa-seedling', label: 'גינון' },
-              { icon: 'fa-robot', label: 'צ׳אט חכם' },
-            ].map((s) => (
-              <a key={s.label} href="#" className="bg-white rounded-xl shadow p-4 flex items-center justify-center gap-2 hover:shadow-md transition text-slate-700">
-                <i className={`fas ${s.icon} text-blue-600`}></i>
-                <span>{s.label}</span>
-              </a>
+              { id: 'diagnosis', icon: 'fa-microscope', label: 'אבחון' },
+              { id: 'scheduler', icon: 'fa-calendar-check', label: 'תיאום טכנאי' },
+              { id: 'cabinet', icon: 'fa-toolbox', label: 'ציוד ותחזוקה' },
+              { id: 'subscription', icon: 'fa-water-ladder', label: 'מנויים (בריכה)' },
+              { id: 'garden', icon: 'fa-seedling', label: 'גינון' },
+              { id: 'garden-subscription', icon: 'fa-leaf', label: 'מנויי גינון' },
+              { id: 'chat', icon: 'fa-robot', label: 'צ׳אט חכם' },
+            ].map((t) => (
+              <button
+                key={t.id}
+                data-tab={t.id}
+                className="flex items-center justify-between gap-2 rounded-xl bg-white/90 border border-slate-200 px-3 py-3 shadow-sm hover:shadow-md active:scale-[0.99] transition"
+              >
+                <span className="text-slate-800 text-sm font-medium">{t.label}</span>
+                <span className="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 grid place-items-center">
+                  <i className={`fas ${t.icon}`}></i>
+                </span>
+              </button>
             ))}
+          </div>
+
+          {/* Panels */}
+          <div className="space-y-6">
+            {/* Diagnosis */}
+            <div id="panel-diagnosis" className="card">
+              <div className="heading mb-2">אבחון מהיר באמצעות תמונה</div>
+              <form id="diagnosisForm" className="space-y-3">
+                <input id="diagFile" type="file" name="image" accept="image/*" className="hidden" required />
+                <div className="flex items-center gap-2">
+                  <label htmlFor="diagFile" className="inline-flex items-center gap-2 bg-white text-blue-700 px-4 py-2 rounded-lg shadow hover:bg-slate-50 transition cursor-pointer">
+                    <i className="fas fa-upload"></i>
+                    העלאת תמונה
+                  </label>
+                  <span id="diagFileName" className="text-sm text-slate-600 truncate max-w-[50%]">לא נבחר קובץ</span>
+                </div>
+                <button type="submit" className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-2 px-4">
+                  <i className="fas fa-magnifying-glass"></i>
+                  נתח תמונה
+                </button>
+              </form>
+              <pre id="diagnosisResult" className="mt-3 text-sm text-slate-700 whitespace-pre-wrap"></pre>
+              <p className="text-xs text-slate-500 mt-2">Tip: add OPENAI_API_KEY to enable real AI diagnostics. Fallback returns mock response.</p>
+            </div>
+
+            {/* Scheduler */}
+            <div id="panel-scheduler" className="card hidden">
+              <div className="heading mb-2">תיאום טכנאי</div>
+              <div className="text-sm text-slate-600">Calendar integration coming soon. This will connect to your chosen calendar provider.</div>
+            </div>
+
+            {/* Cabinet */}
+            <div id="panel-cabinet" className="card hidden">
+              <div className="heading mb-2">ציוד ותחזוקה</div>
+              <ul className="list-disc pr-6 text-sm text-slate-700 space-y-1">
+                <li>Filter check</li>
+                <li>Pump inspection</li>
+                <li>Chemicals stock</li>
+              </ul>
+            </div>
+
+            {/* Subscription (Pool) */}
+            <div id="panel-subscription" className="card hidden">
+              <div className="heading mb-2">מנויי בריכה</div>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[
+                  { id: 'basic', name: 'מנוי בסיסי', price: '₪600/חודש', features: ['2 ביקורים'] },
+                  { id: 'monthly', name: 'מנוי חודשי', price: '₪1000/חודש', features: ['4 ביקורים'] },
+                  { id: 'yearly', name: 'מנוי שנתי', price: '₪9000/שנה', features: ['פופולרי'] },
+                  { id: 'vip', name: 'מנוי VIP', price: '₪15000/שנה', features: ['כולל חומרים', 'הדברה', 'שטיפת רכב 1x/שבוע'] },
+                  { id: 'premium', name: 'מנוי פרימיום', price: '₪2500/חודש', features: ['כולל הכל בריכה וגינון', 'ביקור שבועי'] },
+                ].map((p) => (
+                  <div key={p.id} className="rounded-2xl border bg-white p-5 shadow-sm">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="font-bold text-lg">{p.name}</h3>
+                      <span className="text-blue-700 font-semibold">{p.price}</span>
+                    </div>
+                    <ul className="text-sm text-slate-600 space-y-1 mb-4">
+                      {p.features.map((f) => (
+                        <li key={f} className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>{f}</li>
+                      ))}
+                    </ul>
+                    <button className="w-full btn btn-primary" data-plan={p.id}>רכוש מנוי</button>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-slate-500 mt-2">Tip: add STRIPE_SECRET_KEY to enable live checkout. Fallback returns a mock URL.</p>
+            </div>
+
+            {/* Garden */}
+            <div id="panel-garden" className="card hidden">
+              <div className="heading mb-2">שירותי גינון</div>
+              <p className="text-sm text-slate-600">Garden care requests will be sent to the service queue.</p>
+            </div>
+
+            {/* Garden Subscription */}
+            <div id="panel-garden-subscription" className="card hidden">
+              <div className="heading mb-2">מנויי גינון</div>
+              <p className="text-sm text-slate-600">Garden subscription plans will be handled similarly to pool subscriptions.</p>
+            </div>
+
+            {/* Smart Chat */}
+            <div id="panel-chat" className="card hidden">
+              <div className="heading mb-2">צ׳אט חכם</div>
+              <div className="flex gap-2">
+                <input id="chatInput" className="flex-1 border rounded-lg px-3 py-2" placeholder="שאל שאלה על תחזוקת בריכה" />
+                <button id="chatSend" className="btn btn-accent">שלח</button>
+              </div>
+              <div id="chatLog" className="mt-3 text-sm text-slate-700 space-y-2"></div>
+              <p className="text-xs text-slate-500 mt-2">Tip: add OPENAI_API_KEY to enable real AI responses. Irrelevant questions will be filtered.</p>
+            </div>
           </div>
         </div>
       </section>
@@ -137,8 +251,227 @@ app.get('/', (c) => {
         </div>
         <div className="text-center text-xs text-white/60 pb-6">© {new Date().getFullYear()} מים וטבע</div>
       </footer>
+
+      {/* Sticky Mobile Action Bar */}
+      <nav id="bottomNav" className="sm:hidden fixed bottom-0 inset-x-0 z-40">
+        <div className="max-w-5xl mx-auto px-4 pb-[calc(env(safe-area-inset-bottom)+8px)]">
+          <div className="backdrop-blur bg-white/90 border border-white/80 rounded-2xl shadow-xl">
+            <div className="grid grid-cols-4 text-center py-2">
+              <button data-tab="diagnosis" className="flex flex-col items-center gap-1 text-slate-700">
+                <span className="nav-icon w-10 h-10 grid place-items-center rounded-xl bg-blue-50 text-blue-600"><i className="fas fa-camera"></i></span>
+                <span className="text-[11px] leading-none">אבחון</span>
+              </button>
+              <button data-tab="chat" className="flex flex-col items-center gap-1 text-slate-700">
+                <span className="nav-icon w-10 h-10 grid place-items-center rounded-xl bg-blue-50 text-blue-600"><i className="fas fa-robot"></i></span>
+                <span className="text-[11px] leading-none">צ׳אט</span>
+              </button>
+              <button data-tab="subscription" className="flex flex-col items-center gap-1 text-slate-700">
+                <span className="nav-icon w-10 h-10 grid place-items-center rounded-xl bg-blue-50 text-blue-600"><i className="fas fa-water-ladder"></i></span>
+                <span className="text-[11px] leading-none">מנויים</span>
+              </button>
+              <a href="tel:0500000000" className="flex flex-col items-center gap-1 text-slate-700">
+                <span className="nav-icon w-10 h-10 grid place-items-center rounded-xl bg-blue-50 text-blue-600"><i className="fas fa-phone"></i></span>
+                <span className="text-[11px] leading-none">שיחה</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </nav>
     </main>
   )
+})
+
+// ------------------- API: Health & Config -------------------
+app.get('/api/health', (c) => c.json({ ok: true }))
+
+app.get('/api/config/public', (c) => {
+  return c.json({
+    name: 'מים וטבע',
+    plans: ['basic', 'monthly', 'yearly', 'vip', 'premium'],
+  })
+})
+
+// ------------------- API: Mock Auth (temp until Supabase) -------------------
+app.post('/api/auth/login', async (c) => {
+  const body = await c.req.json<{ email: string, password: string }>().catch(() => ({ email: '', password: '' }))
+  if (!body.email || !body.password) return c.json({ error: 'Missing credentials' }, 400)
+  // TEMP: mock token (replace with Supabase later)
+  const token = 'mock.' + btoa(body.email)
+  return c.json({ token, user: { email: body.email, role: 'customer' } })
+})
+
+app.get('/api/auth/me', (c) => {
+  const auth = c.req.header('authorization') || ''
+  if (!auth.startsWith('Bearer mock.')) return c.json({ error: 'Unauthorized' }, 401)
+  const email = atob(auth.replace('Bearer mock.', ''))
+  return c.json({ email, name: 'לקוח/ה', role: 'customer' })
+})
+
+// ------------------- API: AI Diagnose (OpenAI Vision or mock) -------------------
+app.post('/api/diagnose', async (c) => {
+  const { env } = c
+  const form = await c.req.parseBody()
+  const file = form['image']
+  if (!file || !(file instanceof File)) return c.json({ error: 'Image is required' }, 400)
+
+  if (!env.OPENAI_API_KEY) {
+    return c.json({
+      source: 'mock',
+      findings: [
+        'Slight algae presence near waterline',
+        'Filter likely needs backwashing',
+      ],
+      recommendations: [
+        'Brush walls and vacuum debris',
+        'Check pH (target 7.2–7.6) and free chlorine (1–3 ppm)',
+        'Backwash filter and inspect pump basket',
+      ],
+    })
+  }
+
+  // Real call to OpenAI (vision) – minimal example
+  const b64 = await file.arrayBuffer().then((buf) => {
+    let binary = ''
+    const bytes = new Uint8Array(buf)
+    for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i])
+    return btoa(binary)
+  })
+
+  const payload = {
+    model: 'gpt-4o-mini',
+    messages: [
+      {
+        role: 'system',
+        content: 'You are a professional pool maintenance diagnostician. Return concise findings and specific recommendations in JSON.'
+      },
+      {
+        role: 'user',
+        content: [
+          { type: 'text', text: 'Analyze this pool photo for issues and give recommended actions.' },
+          { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${b64}` } }
+        ]
+      }
+    ],
+    temperature: 0.2
+  }
+
+  const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${env.OPENAI_API_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  })
+
+  if (!resp.ok) {
+    const txt = await resp.text()
+    return c.json({ error: 'OpenAI error', detail: txt }, 502)
+  }
+
+  const data = await resp.json<any>()
+  const text = data.choices?.[0]?.message?.content || ''
+  return c.json({ source: 'openai', raw: text })
+})
+
+// ------------------- API: Smart Chat with keyword filter -------------------
+const KEYWORDS = ['pool', 'chlorine', 'ph', 'filter', 'pump', 'algae', 'leak', 'skimmer', 'vacuum', 'backwash', 'garden', 'plants']
+
+app.post('/api/ai/chat', async (c) => {
+  const { env } = c
+  const { question } = await c.req.json<{ question: string }>().catch(() => ({ question: '' }))
+  if (!question || question.trim().length < 4) return c.json({ error: 'Question unclear. Please rephrase.' }, 400)
+  const qLower = question.toLowerCase()
+  const relevant = KEYWORDS.some(k => qLower.includes(k))
+  if (!relevant) return c.json({ error: 'Question unclear or irrelevant. Try again with pool/garden specifics.' }, 400)
+
+  if (!env.OPENAI_API_KEY) {
+    return c.json({ source: 'mock', answer: 'For light algae, brush the walls, vacuum, and balance pH 7.2–7.6 with chlorine 1–3 ppm.' })
+  }
+
+  const prompt = `Answer briefly as a professional pool/garden maintenance assistant. Focus on practical steps. Question: ${question}`
+  const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${env.OPENAI_API_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], temperature: 0.2 })
+  })
+  if (!resp.ok) return c.json({ error: 'OpenAI error' }, 502)
+  const data = await resp.json<any>()
+  const answer = data.choices?.[0]?.message?.content || 'No answer'
+  return c.json({ source: 'openai', answer })
+})
+
+// ------------------- API: Stripe Checkout (or mock) -------------------
+const PLAN_MAP: Record<string, { name: string; amountIls: number; interval: 'month' | 'year'; interval_count: number }> = {
+  basic:   { name: 'מנוי בסיסי',   amountIls: 600,  interval: 'month', interval_count: 1 },
+  monthly: { name: 'מנוי חודשי',   amountIls: 1000, interval: 'month', interval_count: 1 },
+  yearly:  { name: 'מנוי שנתי',    amountIls: 9000, interval: 'year',  interval_count: 1 },
+  vip:     { name: 'מנוי VIP',     amountIls: 15000,interval: 'year',  interval_count: 1 },
+  premium: { name: 'מנוי פרימיום', amountIls: 2500, interval: 'month', interval_count: 1 },
+}
+
+app.post('/api/stripe/create-checkout-session', async (c) => {
+  const { env } = c
+  const { plan } = await c.req.json<{ plan: string }>().catch(() => ({ plan: '' }))
+  const cfg = PLAN_MAP[plan]
+  if (!cfg) return c.json({ error: 'Unknown plan' }, 400)
+
+  const baseUrl = env.PUBLIC_BASE_URL || (new URL(c.req.url)).origin
+  const success_url = `${baseUrl}/?status=success`
+  const cancel_url = `${baseUrl}/?status=cancel`
+
+  if (!env.STRIPE_SECRET_KEY) {
+    return c.json({ source: 'mock', url: success_url + `&plan=${plan}` })
+  }
+
+  const body = new URLSearchParams()
+  body.set('mode', 'subscription')
+  body.set('success_url', success_url)
+  body.set('cancel_url', cancel_url)
+  body.set('line_items[0][price_data][currency]', 'ils')
+  body.set('line_items[0][price_data][recurring][interval]', cfg.interval)
+  body.set('line_items[0][price_data][recurring][interval_count]', String(cfg.interval_count))
+  body.set('line_items[0][price_data][unit_amount]', String(cfg.amountIls * 100))
+  body.set('line_items[0][price_data][product_data][name]', cfg.name)
+  body.set('line_items[0][quantity]', '1')
+
+  const resp = await fetch('https://api.stripe.com/v1/checkout/sessions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${env.STRIPE_SECRET_KEY}`,
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body
+  })
+  const data = await resp.json<any>()
+  if (!resp.ok) return c.json({ error: 'Stripe error', detail: data }, 502)
+  return c.json({ id: data.id, url: data.url })
+})
+
+// Minimal webhook handler with optional signature check
+app.post('/api/stripe/webhook', async (c) => {
+  const { env } = c
+  const sigHeader = c.req.header('stripe-signature') || ''
+  const body = await c.req.text()
+
+  // Optional signature verification (v1)
+  if (env.STRIPE_WEBHOOK_SECRET) {
+    const parts = sigHeader.split(',').reduce<Record<string, string>>((acc, p) => { const [k, v] = p.split('='); if (k && v) acc[k] = v; return acc }, {})
+    const t = parts['t']
+    const v1 = parts['v1']
+    if (!t || !v1) return c.json({ error: 'Invalid signature header' }, 400)
+    const encoder = new TextEncoder()
+    const key = await crypto.subtle.importKey('raw', encoder.encode(env.STRIPE_WEBHOOK_SECRET), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'])
+    const signatureBytes = await crypto.subtle.sign('HMAC', key, encoder.encode(`${t}.${body}`))
+    const calc = Array.from(new Uint8Array(signatureBytes)).map(b => b.toString(16).padStart(2, '0')).join('')
+    if (calc !== v1) return c.json({ error: 'Signature mismatch' }, 400)
+  }
+
+  // TODO: handle event types (checkout.session.completed, invoice.paid, etc.)
+  return c.json({ received: true })
 })
 
 export default app

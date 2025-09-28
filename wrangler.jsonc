@@ -5,10 +5,11 @@
   "pages_build_output_dir": "./dist",
   "compatibility_flags": [
     "nodejs_compat"
-  ]
-  // "vars": {
-  //   "MY_VAR": "my-variable"
-  // },
+  ],
+  "vars": {
+    // Publicly safe values only; secrets via `pages secret put`
+    "PUBLIC_BASE_URL": ""
+  },
   // "kv_namespaces": [
   //   {
   //     "binding": "MY_KV_NAMESPACE",

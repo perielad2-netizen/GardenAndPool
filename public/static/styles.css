@@ -5,10 +5,22 @@ html[dir="rtl"] body { direction: rtl; }
 .glass {
   background: rgba(255, 255, 255, 0.25);
   box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.12);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.28);
   border-radius: 16px;
+}
+
+/* Emphasis chips active state */
+#serviceChips button.active {
+  outline: 2px solid #1e40af22;
+  box-shadow: 0 6px 18px rgba(2, 132, 199, 0.15);
+}
+
+/* Bottom nav active styling */
+#bottomNav .nav-icon.active {
+  background: #1e40af;
+  color: #fff;
 }
 
 /* Subtle wave gradient animation */
