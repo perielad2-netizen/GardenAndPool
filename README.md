@@ -38,6 +38,7 @@
 - **מנוי חודשי (Monthly)**: ₪1000/month - 4 visits, full service
 - **מנוי שנתי (Yearly)**: ₪9000/year - Weekly visits, 24/7 support (Popular)
 - **מנוי VIP**: ₪15000/year - Premium service with house spraying & car wash
+- **מנוי פרימיום מושלם (Premium Complete)**: ₪2500/month - **NEW!** Complete pool + garden service, weekly visits, all chemicals & equipment, dedicated consultant (Save ₪1,300/month!)
 
 ### 5. Mobile-First Responsive Design
 - Touch-friendly interface with 44px minimum touch targets

@@ -627,7 +627,7 @@ const App = () => {
             תוכניות המנוי שלנו
           </h3>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
             {/* Basic Plan */}
             <div class="bg-white rounded-xl p-6 shadow-lg">
               <div class="text-center">
@@ -698,6 +698,71 @@ const App = () => {
                 </ul>
                 <button class="bg-white text-orange-500 px-6 py-2 rounded-lg w-full font-bold">
                   בחר תוכנית
+                </button>
+              </div>
+            </div>
+
+            {/* Premium Complete Plan - New */}
+            <div class="bg-gradient-to-br from-purple-500 to-indigo-600 text-white rounded-xl p-6 shadow-lg relative overflow-hidden border-2 border-purple-300">
+              <div class="absolute top-0 right-0 bg-gradient-to-r from-pink-500 to-purple-600 text-white px-3 py-1 text-sm font-bold">חדש!</div>
+              
+              {/* Premium badge */}
+              <div class="absolute -top-2 -left-2 w-16 h-16 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center transform rotate-12">
+                <i class="fas fa-gem text-white text-lg"></i>
+              </div>
+              
+              <div class="text-center">
+                <h4 class="text-xl font-bold mb-2 hebrew-title">מנוי פרימיום מושלם</h4>
+                <div class="text-sm opacity-90 mb-3">בריכה + גינה במנוי אחד</div>
+                <div class="text-3xl font-bold mb-2">₪2500</div>
+                <div class="text-sm opacity-90 mb-4">לחודש</div>
+                <div class="text-xs bg-white/20 rounded-full px-2 py-1 mb-4">ביקור שבועי מקצועי</div>
+                
+                <ul class="text-right space-y-1 mb-4 text-sm">
+                  <li class="flex items-center gap-2">
+                    <i class="fas fa-swimming-pool text-cyan-300"></i>
+                    <span>תחזוקת בריכה מלאה שבועית</span>
+                  </li>
+                  <li class="flex items-center gap-2">
+                    <i class="fas fa-leaf text-green-300"></i>
+                    <span>תחזוקת גינה מקצועית שבועית</span>
+                  </li>
+                  <li class="flex items-center gap-2">
+                    <i class="fas fa-flask text-yellow-300"></i>
+                    <span>כל הכימיקלים והדשנים</span>
+                  </li>
+                  <li class="flex items-center gap-2">
+                    <i class="fas fa-tools text-orange-300"></i>
+                    <span>כל הציוד והאביזרים</span>
+                  </li>
+                  <li class="flex items-center gap-2">
+                    <i class="fas fa-seedling text-green-400"></i>
+                    <span>החלפת צמחים עונתית</span>
+                  </li>
+                  <li class="flex items-center gap-2">
+                    <i class="fas fa-shield-alt text-blue-300"></i>
+                    <span>אחריות מלאה על הציוד</span>
+                  </li>
+                  <li class="flex items-center gap-2">
+                    <i class="fas fa-phone text-pink-300"></i>
+                    <span>שירות חירום 24/7</span>
+                  </li>
+                  <li class="flex items-center gap-2">
+                    <i class="fas fa-crown text-yellow-400"></i>
+                    <span>יועץ אישי מוקצה</span>
+                  </li>
+                </ul>
+                
+                <div class="bg-white/10 rounded-lg p-2 mb-4">
+                  <div class="text-xs">
+                    <strong>חסכו ₪1,300 בחודש!</strong><br />
+                    במקום ₪3,800 (₪1,000 בריכה + ₪800 גינה + ₪2,000 תוספות)
+                  </div>
+                </div>
+                
+                <button class="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white px-6 py-2 rounded-lg w-full font-bold transition-all transform hover:scale-105 shadow-lg">
+                  <i class="fas fa-gem ml-2"></i>
+                  בחירת המנוי המושלם
                 </button>
               </div>
             </div>
@@ -818,7 +883,27 @@ app.get('/api/plans', (c) => {
       { id: 'basic', name: 'מנוי בסיסי', price: 600, visits: 2, period: 'month' },
       { id: 'monthly', name: 'מנוי חודשי', price: 1000, visits: 4, period: 'month' },
       { id: 'yearly', name: 'מנוי שנתי', price: 9000, visits: 'weekly', period: 'year', popular: true },
-      { id: 'vip', name: 'מנוי VIP', price: 15000, visits: 'weekly', period: 'year', premium: true }
+      { id: 'vip', name: 'מנוי VIP', price: 15000, visits: 'weekly', period: 'year', premium: true },
+      { 
+        id: 'premium-complete', 
+        name: 'מנוי פרימיום מושלם', 
+        price: 2500, 
+        visits: 'weekly', 
+        period: 'month', 
+        services: ['pool', 'garden'],
+        features: [
+          'תחזוקת בריכה מלאה שבועית',
+          'תחזוקת גינה מקצועית שבועית', 
+          'כל הכימיקלים והדשנים',
+          'כל הציוד והאביזרים',
+          'החלפת צמחים עונתית',
+          'אחריות מלאה על הציוד',
+          'שירות חירום 24/7',
+          'יועץ אישי מוקצה'
+        ],
+        savings: 1300,
+        new: true
+      }
     ]
   })
 })
