@@ -1,411 +1,419 @@
-// Water & Nature Pool Management System - Frontend JavaScript
+// Water & Nature Pool Management System - JavaScript
+// Hebrew RTL Pool and Garden Management Application
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('מים וטבע - Pool Management System Loaded');
-
-    // Initialize animations and interactions
-    initializeAnimations();
-    initializeServiceTabs();
-    initializePlanSelection();
-    initializeContactForms();
-
-    // Add smooth scrolling for better UX
-    document.documentElement.style.scrollBehavior = 'smooth';
+  console.log('מים וטבע - Water & Nature Application Loaded');
+  
+  // Initialize application
+  initializeApp();
 });
 
-// Initialize Animations
-function initializeAnimations() {
-    // Intersection Observer for scroll animations
-    const observerOptions = {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.style.opacity = '1';
-                entry.target.style.transform = 'translateY(0)';
-            }
-        });
-    }, observerOptions);
-
-    // Observe all cards and sections
-    document.querySelectorAll('.glass-card, .glass-card-dark').forEach(card => {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(20px)';
-        card.style.transition = 'all 0.6s ease';
-        observer.observe(card);
-    });
-
-    // Add ripple effect to buttons
-    document.querySelectorAll('button').forEach(button => {
-        button.addEventListener('click', createRipple);
-    });
+function initializeApp() {
+  // Initialize service tabs
+  initializeServiceTabs();
+  
+  // Initialize camera functionality
+  initializeCamera();
+  
+  // Initialize form handlers
+  initializeForms();
+  
+  // Initialize animations
+  initializeAnimations();
+  
+  // Initialize notifications
+  initializeNotifications();
+  
+  // Initialize mobile menu
+  initializeMobileMenu();
 }
 
-// Create ripple effect on button click
-function createRipple(event) {
-    const button = event.currentTarget;
-    const circle = document.createElement('span');
-    const diameter = Math.max(button.clientWidth, button.clientHeight);
-    const radius = diameter / 2;
-
-    circle.style.width = circle.style.height = `${diameter}px`;
-    circle.style.left = `${event.clientX - button.offsetLeft - radius}px`;
-    circle.style.top = `${event.clientY - button.offsetTop - radius}px`;
-    circle.classList.add('ripple');
-
-    const ripple = button.getElementsByClassName('ripple')[0];
-    if (ripple) {
-        ripple.remove();
-    }
-
-    button.appendChild(circle);
-
-    // Remove ripple after animation
-    setTimeout(() => {
-        circle.remove();
-    }, 600);
-}
-
-// Initialize Service Tabs
+// Service Tabs Management
 function initializeServiceTabs() {
-    const serviceTabs = document.querySelectorAll('.glass-card-dark');
-    
-    serviceTabs.forEach(tab => {
-        tab.addEventListener('click', function() {
-            const serviceType = this.querySelector('h4').textContent;
-            handleServiceSelection(serviceType);
-        });
-
-        // Add hover effects
-        tab.addEventListener('mouseenter', function() {
-            this.style.transform = 'scale(1.05) translateY(-5px)';
-        });
-
-        tab.addEventListener('mouseleave', function() {
-            this.style.transform = 'scale(1) translateY(0)';
-        });
+  const tabs = document.querySelectorAll('.service-tab');
+  const contents = document.querySelectorAll('.service-content');
+  
+  if (tabs.length === 0) return;
+  
+  tabs.forEach(tab => {
+    tab.addEventListener('click', function() {
+      const service = this.dataset.service;
+      
+      // Remove active class from all tabs and contents
+      tabs.forEach(t => t.classList.remove('active'));
+      contents.forEach(c => c.classList.remove('active'));
+      
+      // Add active class to clicked tab
+      this.classList.add('active');
+      
+      // Show corresponding content
+      const content = document.getElementById(service + '-content');
+      if (content) {
+        content.classList.add('active');
+      }
     });
+  });
 }
 
-// Handle Service Selection
-function handleServiceSelection(serviceType) {
-    console.log(`Selected service: ${serviceType}`);
-    
-    // Show loading state
-    showLoadingToast(`טוען ${serviceType}...`);
-
-    // Simulate service loading (replace with actual navigation)
-    setTimeout(() => {
-        switch(serviceType) {
-            case 'אבחון':
-                showCameraCapture();
-                break;
-            case 'תיאום טכנאי':
-                showScheduler();
-                break;
-            case 'ארון תחזוקה':
-                showMaintenanceCabinet();
-                break;
-            case 'מנויים':
-                scrollToElement('subscription-plans');
-                break;
-            case 'גינון':
-                showGardenServices();
-                break;
-            case 'מנוי גינון':
-                showGardenSubscription();
-                break;
-            default:
-                showToast('השירות יהיה זמין בקרוב', 'info');
-        }
-    }, 1000);
+// Camera Functionality
+function initializeCamera() {
+  // Camera button handlers
+  const cameraBtn = document.getElementById('cameraBtn');
+  if (cameraBtn) {
+    cameraBtn.addEventListener('click', openCameraCapture);
+  }
+  
+  // Initialize capture buttons
+  initializeCaptureButtons();
 }
 
-// Initialize Plan Selection
-function initializePlanSelection() {
-    const planButtons = document.querySelectorAll('button[class*="btn-"]');
-    
-    planButtons.forEach(button => {
-        if (button.textContent.includes('בחר תוכנית') || button.textContent.includes('בחר מנוי')) {
-            button.addEventListener('click', function() {
-                const planCard = this.closest('div[class*="bg-"]');
-                const planName = planCard.querySelector('h4').textContent;
-                const planPrice = planCard.querySelector('div[class*="text-3xl"]').textContent;
-                
-                handlePlanSelection(planName, planPrice);
-            });
-        }
-    });
-}
-
-// Handle Plan Selection
-function handlePlanSelection(planName, planPrice) {
-    console.log(`Selected plan: ${planName} - ${planPrice}`);
-    
-    showConfirmationModal({
-        title: 'בחירת מנוי',
-        message: `בחרת במנוי: ${planName}<br>מחיר: ${planPrice}<br>האם תרצה להמשיך?`,
-        confirmText: 'המשך',
-        cancelText: 'ביטול',
-        onConfirm: () => {
-            showToast('מועבר לעמוד התשלום...', 'success');
-            // Redirect to payment page
-            setTimeout(() => {
-                window.location.href = '/checkout';
-            }, 1500);
-        }
-    });
-}
-
-// Initialize Contact Forms
-function initializeContactForms() {
-    // Phone button in hero section
-    const phoneButton = document.querySelector('button[class*="border-2"]');
-    if (phoneButton) {
-        phoneButton.addEventListener('click', function() {
-            window.open('tel:+972501234567');
-        });
+function initializeCaptureButtons() {
+  // New photo button
+  document.addEventListener('click', function(e) {
+    if (e.target.closest('button') && e.target.textContent.includes('צילום חדש')) {
+      openCamera();
     }
-
-    // Contact section interactions
-    const contactCards = document.querySelectorAll('section[class*="bg-gray-100"] .bg-white');
-    contactCards.forEach(card => {
-        card.addEventListener('click', function() {
-            const contactType = this.querySelector('h4').textContent;
-            const contactValue = this.querySelector('p').textContent;
-            
-            handleContactAction(contactType, contactValue);
-        });
-    });
-}
-
-// Handle Contact Actions
-function handleContactAction(type, value) {
-    switch(type) {
-        case 'טלפון':
-            window.open(`tel:${value.replace(/[^0-9+]/g, '')}`);
-            break;
-        case 'אימייל':
-            window.open(`mailto:${value}`);
-            break;
-        case 'כתובת':
-            window.open(`https://maps.google.com/?q=${encodeURIComponent(value)}`);
-            break;
+    
+    if (e.target.closest('button') && e.target.textContent.includes('העלאה מהגלריה')) {
+      openGallery();
     }
+  });
 }
 
-// Service Functions (Placeholders for future implementation)
-function showCameraCapture() {
-    showModal({
-        title: 'אבחון בריכה',
-        content: `
-            <div class="text-center">
-                <div class="text-6xl mb-4">📸</div>
-                <p class="mb-4">צלם את הבריכה לאבחון מהיר</p>
-                <button class="btn-water text-white px-6 py-2 rounded-lg" onclick="openCamera()">
-                    פתח מצלמה
-                </button>
-            </div>
-        `
-    });
-}
-
-function showScheduler() {
-    showModal({
-        title: 'תיאום טכנאי',
-        content: `
-            <div class="space-y-4">
-                <div class="text-6xl text-center mb-4">📅</div>
-                <div>
-                    <label class="block text-sm font-bold mb-2">בחר תאריך:</label>
-                    <input type="date" class="w-full p-2 border rounded-lg" min="${new Date().toISOString().split('T')[0]}">
-                </div>
-                <div>
-                    <label class="block text-sm font-bold mb-2">בחר שעה:</label>
-                    <select class="w-full p-2 border rounded-lg">
-                        <option>09:00</option>
-                        <option>10:00</option>
-                        <option>11:00</option>
-                        <option>14:00</option>
-                        <option>15:00</option>
-                        <option>16:00</option>
-                    </select>
-                </div>
-                <button class="btn-water text-white px-6 py-2 rounded-lg w-full" onclick="scheduleAppointment()">
-                    קבע תור
-                </button>
-            </div>
-        `
-    });
-}
-
-function showMaintenanceCabinet() {
-    showToast('ארון התחזוקה יהיה זמין בקרוב', 'info');
-}
-
-function showGardenServices() {
-    showToast('שירותי גינון יהיו זמינים בקרוב', 'info');
-}
-
-function showGardenSubscription() {
-    showToast('מנוי גינון יהיה זמין בקרוב', 'info');
-}
-
-// Utility Functions
-function showToast(message, type = 'info') {
-    const toast = document.createElement('div');
-    toast.className = `fixed top-4 right-4 z-50 p-4 rounded-lg text-white font-bold max-w-sm ${
-        type === 'success' ? 'bg-green-500' : 
-        type === 'error' ? 'bg-red-500' : 
-        'bg-blue-500'
-    }`;
-    toast.textContent = message;
-    
-    document.body.appendChild(toast);
-    
-    // Animate in
-    toast.style.transform = 'translateX(100%)';
-    setTimeout(() => {
-        toast.style.transform = 'translateX(0)';
-        toast.style.transition = 'transform 0.3s ease';
-    }, 100);
-    
-    // Remove after 3 seconds
-    setTimeout(() => {
-        toast.style.transform = 'translateX(100%)';
-        setTimeout(() => {
-            document.body.removeChild(toast);
-        }, 300);
-    }, 3000);
-}
-
-function showLoadingToast(message) {
-    const toast = document.createElement('div');
-    toast.className = 'fixed top-4 right-4 z-50 p-4 rounded-lg bg-blue-500 text-white font-bold max-w-sm flex items-center gap-3';
-    toast.innerHTML = `
-        <div class="loading-spinner"></div>
-        <span>${message}</span>
-    `;
-    
-    document.body.appendChild(toast);
-    
-    // Auto remove after 2 seconds
-    setTimeout(() => {
-        if (document.body.contains(toast)) {
-            document.body.removeChild(toast);
-        }
-    }, 2000);
-}
-
-function showModal({ title, content }) {
-    const modal = document.createElement('div');
-    modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50';
-    modal.innerHTML = `
-        <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4 max-h-96 overflow-y-auto">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold hebrew-title">${title}</h3>
-                <button class="text-gray-500 hover:text-gray-700 text-xl" onclick="closeModal()">&times;</button>
-            </div>
-            <div>${content}</div>
-        </div>
-    `;
-    
-    document.body.appendChild(modal);
-    document.body.style.overflow = 'hidden';
-    
-    // Close on backdrop click
-    modal.addEventListener('click', function(e) {
-        if (e.target === modal) {
-            closeModal();
-        }
-    });
-}
-
-function showConfirmationModal({ title, message, confirmText, cancelText, onConfirm }) {
-    const modal = document.createElement('div');
-    modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50';
-    modal.innerHTML = `
-        <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4">
-            <h3 class="text-xl font-bold hebrew-title mb-4">${title}</h3>
-            <div class="mb-6">${message}</div>
-            <div class="flex gap-3 justify-end">
-                <button class="px-4 py-2 text-gray-600 border rounded-lg hover:bg-gray-50" onclick="closeModal()">
-                    ${cancelText}
-                </button>
-                <button class="btn-water text-white px-4 py-2 rounded-lg" onclick="confirmAction()">
-                    ${confirmText}
-                </button>
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(modal);
-    document.body.style.overflow = 'hidden';
-    
-    // Store callback
-    window.currentConfirmCallback = onConfirm;
-}
-
-function closeModal() {
-    const modals = document.querySelectorAll('[class*="fixed inset-0 z-50"]');
-    modals.forEach(modal => {
-        document.body.removeChild(modal);
-    });
-    document.body.style.overflow = 'auto';
-}
-
-function confirmAction() {
-    if (window.currentConfirmCallback) {
-        window.currentConfirmCallback();
-        window.currentConfirmCallback = null;
-    }
-    closeModal();
-}
-
-function scrollToElement(elementId) {
-    const element = document.getElementById(elementId);
-    if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-    }
+function openCameraCapture() {
+  showNotification('פותח מצלמה לאבחון...', 'info');
+  // Here you would implement camera capture functionality
+  // For now, we'll show a placeholder
+  setTimeout(() => {
+    showNotification('המצלמה מוכנה לשימוש', 'success');
+  }, 1000);
 }
 
 function openCamera() {
-    // Placeholder for camera functionality
-    showToast('מצלמה תיפתח בגרסה הבאה', 'info');
-    closeModal();
+  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(function(stream) {
+        showNotification('המצלמה פעילה', 'success');
+        // Here you would display the camera stream
+      })
+      .catch(function(error) {
+        console.error('Camera access error:', error);
+        showNotification('שגיאה בגישה למצלמה', 'error');
+      });
+  } else {
+    showNotification('המצלמה אינה זמינה בדפדפן זה', 'warning');
+  }
 }
 
-function scheduleAppointment() {
-    const dateInput = document.querySelector('input[type="date"]');
-    const timeSelect = document.querySelector('select');
-    
-    if (dateInput.value && timeSelect.value) {
-        showToast(`תור נקבע ל-${dateInput.value} בשעה ${timeSelect.value}`, 'success');
-        closeModal();
-    } else {
-        showToast('אנא בחר תאריך ושעה', 'error');
+function openGallery() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = function(e) {
+    const file = e.target.files[0];
+    if (file) {
+      showNotification('תמונה נבחרה: ' + file.name, 'success');
+      // Here you would process the uploaded image
     }
+  };
+  input.click();
 }
 
-// Add CSS for ripple effect
+// Form Handlers
+function initializeForms() {
+  // Scheduler form
+  const schedulerForm = document.querySelector('#scheduler-content form');
+  if (schedulerForm) {
+    schedulerForm.addEventListener('submit', handleSchedulerSubmit);
+  }
+  
+  // Contact form
+  const contactForm = document.querySelector('#contact form');
+  if (contactForm) {
+    contactForm.addEventListener('submit', handleContactSubmit);
+  }
+  
+  // Subscription buttons
+  document.addEventListener('click', function(e) {
+    const button = e.target.closest('button');
+    if (button && (button.textContent.includes('בחר תוכנית') || button.textContent.includes('בחירה'))) {
+      handleSubscriptionSelection(button);
+    }
+  });
+}
+
+function handleSchedulerSubmit(e) {
+  e.preventDefault();
+  const formData = new FormData(e.target);
+  
+  showNotification('שולח בקשה...', 'info');
+  
+  // Simulate API call
+  setTimeout(() => {
+    showNotification('הבקשה נשלחה בהצלחה! נחזור אליכם בהקדם', 'success');
+    e.target.reset();
+  }, 1500);
+}
+
+function handleContactSubmit(e) {
+  e.preventDefault();
+  const formData = new FormData(e.target);
+  
+  showNotification('שולח הודעה...', 'info');
+  
+  // Simulate API call
+  setTimeout(() => {
+    showNotification('ההודעה נשלחה בהצלחה!', 'success');
+    e.target.reset();
+  }, 1500);
+}
+
+function handleSubscriptionSelection(button) {
+  const planCard = button.closest('.glass-card, .bg-white, .bg-gradient-to-br');
+  const planName = planCard.querySelector('h4, h5').textContent;
+  
+  showNotification(`בחרתם בתוכנית: ${planName}`, 'success');
+  
+  // Here you would redirect to payment or registration
+  setTimeout(() => {
+    showNotification('מעביר לעמוד ההרשמה...', 'info');
+  }, 1000);
+}
+
+// Animations
+function initializeAnimations() {
+  // Add scroll animations
+  observeElements();
+  
+  // Initialize water animations
+  createWaterElements();
+  
+  // Initialize counters
+  animateCounters();
+}
+
+function observeElements() {
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('animate-in');
+        }
+      });
+    },
+    { threshold: 0.1 }
+  );
+  
+  // Observe service cards
+  document.querySelectorAll('.glass-card, .glass-card-dark').forEach(card => {
+    observer.observe(card);
+  });
+}
+
+function createWaterElements() {
+  // Create floating water bubbles
+  const hero = document.querySelector('section.gradient-bg');
+  if (!hero) return;
+  
+  for (let i = 0; i < 5; i++) {
+    const bubble = document.createElement('div');
+    bubble.className = 'absolute w-2 h-2 bg-white/20 rounded-full';
+    bubble.style.left = Math.random() * 100 + '%';
+    bubble.style.top = Math.random() * 100 + '%';
+    bubble.style.animation = `float 3s ease-in-out infinite ${Math.random() * 2}s`;
+    hero.appendChild(bubble);
+  }
+}
+
+function animateCounters() {
+  const counters = document.querySelectorAll('.text-3xl.font-bold');
+  
+  counters.forEach(counter => {
+    const text = counter.textContent;
+    const number = text.match(/\d+/);
+    
+    if (number) {
+      const target = parseInt(number[0]);
+      let current = 0;
+      const increment = target / 50;
+      
+      const timer = setInterval(() => {
+        current += increment;
+        if (current >= target) {
+          current = target;
+          clearInterval(timer);
+        }
+        counter.textContent = text.replace(/\d+/, Math.floor(current));
+      }, 50);
+    }
+  });
+}
+
+// Notifications
+function initializeNotifications() {
+  // Create notification container
+  if (!document.getElementById('notifications')) {
+    const container = document.createElement('div');
+    container.id = 'notifications';
+    container.className = 'fixed top-4 left-4 z-50 space-y-2';
+    container.style.direction = 'rtl';
+    document.body.appendChild(container);
+  }
+}
+
+function showNotification(message, type = 'info') {
+  const container = document.getElementById('notifications');
+  const notification = document.createElement('div');
+  
+  const bgColors = {
+    success: 'bg-green-500',
+    error: 'bg-red-500',
+    warning: 'bg-yellow-500',
+    info: 'bg-blue-500'
+  };
+  
+  const icons = {
+    success: 'fas fa-check-circle',
+    error: 'fas fa-exclamation-circle',
+    warning: 'fas fa-exclamation-triangle',
+    info: 'fas fa-info-circle'
+  };
+  
+  notification.className = `${bgColors[type]} text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 transform translate-x-full transition-transform duration-300`;
+  notification.innerHTML = `
+    <i class="${icons[type]}"></i>
+    <span class="font-medium">${message}</span>
+    <button class="ml-auto text-white hover:text-gray-200" onclick="this.parentElement.remove()">
+      <i class="fas fa-times"></i>
+    </button>
+  `;
+  
+  container.appendChild(notification);
+  
+  // Animate in
+  setTimeout(() => {
+    notification.classList.remove('translate-x-full');
+  }, 100);
+  
+  // Auto remove after 5 seconds
+  setTimeout(() => {
+    if (notification.parentElement) {
+      notification.classList.add('translate-x-full');
+      setTimeout(() => {
+        if (notification.parentElement) {
+          notification.remove();
+        }
+      }, 300);
+    }
+  }, 5000);
+}
+
+// Mobile Menu
+function initializeMobileMenu() {
+  const menuButton = document.querySelector('.md\\:hidden button');
+  if (menuButton) {
+    menuButton.addEventListener('click', toggleMobileMenu);
+  }
+}
+
+function toggleMobileMenu() {
+  showNotification('תפריט נייד - בפיתוח', 'info');
+}
+
+// Phone functionality
+document.addEventListener('click', function(e) {
+  const button = e.target.closest('button');
+  if (button && (button.textContent.includes('התקשרו עכשיו') || button.textContent.includes('צור קשר'))) {
+    initiateCall();
+  }
+});
+
+function initiateCall() {
+  const phoneNumber = '052-123-4567';
+  if (navigator.userAgent.match(/iPhone|iPad|iPod|Android/i)) {
+    window.location.href = `tel:${phoneNumber}`;
+  } else {
+    showNotification(`התקשרו אלינו: ${phoneNumber}`, 'info');
+    
+    // Copy to clipboard
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(phoneNumber).then(() => {
+        showNotification('מספר הטלפון הועתק', 'success');
+      });
+    }
+  }
+}
+
+// Utility Functions
+function formatHebrewNumber(num) {
+  return new Intl.NumberFormat('he-IL').format(num);
+}
+
+function formatHebrewDate(date) {
+  return new Intl.DateTimeFormat('he-IL', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  }).format(date);
+}
+
+// Add Hebrew keyboard support
+document.addEventListener('keydown', function(e) {
+  // Add any Hebrew-specific keyboard shortcuts here
+});
+
+// Service Worker Registration (for PWA functionality)
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/sw.js')
+      .then(function(registration) {
+        console.log('ServiceWorker registered successfully');
+      })
+      .catch(function(registrationError) {
+        console.log('ServiceWorker registration failed: ', registrationError);
+      });
+  });
+}
+
+// Add CSS classes for animations
 const style = document.createElement('style');
 style.textContent = `
-    .ripple {
-        position: absolute;
-        border-radius: 50%;
-        background-color: rgba(255, 255, 255, 0.6);
-        pointer-events: none;
-        animation: ripple-animation 0.6s linear;
-    }
-    
-    @keyframes ripple-animation {
-        to {
-            transform: scale(4);
-            opacity: 0;
-        }
-    }
+  .service-tab {
+    @apply glass-card px-4 py-3 rounded-xl cursor-pointer transition-all duration-300 flex items-center gap-2 font-medium;
+  }
+  
+  .service-tab.active {
+    @apply bg-blue-500 text-white;
+  }
+  
+  .service-tab:hover {
+    @apply transform scale-105;
+  }
+  
+  .service-content {
+    @apply hidden;
+  }
+  
+  .service-content.active {
+    @apply block;
+  }
+  
+  .animate-in {
+    @apply transform translate-y-0 opacity-100 transition-all duration-700;
+  }
+  
+  .glass-card:not(.animate-in) {
+    @apply transform translate-y-10 opacity-0;
+  }
+  
+  @keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  
+  @keyframes slideInLeft {
+    from { transform: translateX(-100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
 `;
 document.head.appendChild(style);

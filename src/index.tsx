@@ -86,82 +86,534 @@ const App = () => {
       </section>
 
       {/* Service Tabs */}
-      <section class="py-16 bg-white">
+      <section class="py-16 bg-white" id="services">
         <div class="container mx-auto px-4">
           <h3 class="text-3xl font-bold text-center mb-12 hebrew-title text-gray-800">
             השירותים שלנו
           </h3>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Diagnosis Tab */}
-            <div class="glass-card-dark rounded-xl p-6 hover:shadow-xl transition-all transform hover:scale-105 cursor-pointer">
-              <div class="text-center">
-                <div class="text-4xl mb-4 text-blue-500">📸</div>
-                <h4 class="text-xl font-bold mb-3 hebrew-title">אבחון</h4>
-                <p class="text-gray-600 mb-4">צילום ואבחון מהיר של מצב הבריכה</p>
-                <button class="btn-water text-white px-6 py-2 rounded-lg w-full">
-                  התחל אבחון
-                </button>
+          {/* Tab Navigation */}
+          <div class="flex flex-wrap justify-center gap-3 mb-8" id="service-tabs">
+            <button class="service-tab active" data-service="diagnosis">
+              <i class="fas fa-camera text-lg"></i>
+              <span>אבחון</span>
+            </button>
+            <button class="service-tab" data-service="scheduler">
+              <i class="fas fa-calendar text-lg"></i>
+              <span>תיאום טכנאי</span>
+            </button>
+            <button class="service-tab" data-service="cabinet">
+              <i class="fas fa-toolbox text-lg"></i>
+              <span>ארון תחזוקה</span>
+            </button>
+            <button class="service-tab" data-service="subscription">
+              <i class="fas fa-credit-card text-lg"></i>
+              <span>מנוי תחזוקה</span>
+            </button>
+            <button class="service-tab" data-service="garden">
+              <i class="fas fa-leaf text-lg"></i>
+              <span>גינון</span>
+            </button>
+            <button class="service-tab" data-service="garden-subscription">
+              <i class="fas fa-seedling text-lg"></i>
+              <span>מנוי גינון</span>
+            </button>
+          </div>
+
+          {/* Tab Content */}
+          <div id="service-content" class="min-h-96">
+            {/* Diagnosis Content */}
+            <div id="diagnosis-content" class="service-content active">
+              <div class="glass-card-dark p-8 rounded-2xl max-w-2xl mx-auto">
+                <h4 class="text-2xl font-bold hebrew-title mb-6 text-center text-gray-800">אבחון בריכה באמצעות תמונה</h4>
+                
+                <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-8 text-center mb-6">
+                  <i class="fas fa-camera text-6xl text-blue-500 mb-4"></i>
+                  <p class="text-gray-600 hebrew-subtitle text-lg mb-4">צלמו את הבריכה לאבחון מקצועי מיידי</p>
+                  <p class="text-sm text-gray-500">האבחון כולל זיהוי בעיות, המלצות טיפול והערכת ציוד</p>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-4">
+                  <button class="btn-water text-white py-4 rounded-xl font-medium text-lg">
+                    <i class="fas fa-camera ml-2"></i>
+                    צילום חדש
+                  </button>
+                  <button class="glass-card text-gray-700 py-4 rounded-xl font-medium text-lg">
+                    <i class="fas fa-images ml-2"></i>
+                    העלאה מהגלריה
+                  </button>
+                </div>
               </div>
             </div>
 
-            {/* Scheduler Tab */}
-            <div class="glass-card-dark rounded-xl p-6 hover:shadow-xl transition-all transform hover:scale-105 cursor-pointer">
-              <div class="text-center">
-                <div class="text-4xl mb-4 text-blue-500">📅</div>
-                <h4 class="text-xl font-bold mb-3 hebrew-title">תיאום טכנאי</h4>
-                <p class="text-gray-600 mb-4">קביעת תור לטכנאי מקצועי</p>
-                <button class="btn-water text-white px-6 py-2 rounded-lg w-full">
-                  קבע תור
-                </button>
+            {/* Scheduler Content */}
+            <div id="scheduler-content" class="service-content">
+              <div class="glass-card-dark p-8 rounded-2xl max-w-2xl mx-auto">
+                <h4 class="text-2xl font-bold hebrew-title mb-6 text-center text-gray-800">תיאום פגישה עם טכנאי</h4>
+                
+                <form class="space-y-6">
+                  <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-2">שם מלא *</label>
+                      <input type="text" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:outline-none text-right" placeholder="הכניסו את שמכם" />
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-2">טלפון *</label>
+                      <input type="tel" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:outline-none text-right" placeholder="052-123-4567" />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">כתובת מלאה *</label>
+                    <input type="text" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:outline-none text-right" placeholder="רחוב, מספר בית, עיר" />
+                  </div>
+                  
+                  <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-2">תאריך מועדף</label>
+                      <input type="date" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:outline-none" />
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-2">שעה מועדפת</label>
+                      <select class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:outline-none text-right">
+                        <option>בחרו שעה</option>
+                        <option>08:00 - 10:00</option>
+                        <option>10:00 - 12:00</option>
+                        <option>12:00 - 14:00</option>
+                        <option>14:00 - 16:00</option>
+                        <option>16:00 - 18:00</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">סוג שירות</label>
+                    <select class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:outline-none text-right">
+                      <option>תחזוקה שוטפת</option>
+                      <option>תיקון תקלה דחופה</option>
+                      <option>התקנת ציוד חדש</option>
+                      <option>ייעוץ מקצועי</option>
+                      <option>בדיקה תקופתית</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">הערות נוספות</label>
+                    <textarea class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:outline-none text-right" rows={3} placeholder="תאמו לנו בעיות ספציפיות או דרישות מיוחדות"></textarea>
+                  </div>
+                  
+                  <button type="submit" class="w-full btn-water text-white py-4 rounded-xl font-bold text-lg">
+                    <i class="fas fa-calendar-check ml-2"></i>
+                    שליחת בקשה לתיאום
+                  </button>
+                </form>
               </div>
             </div>
 
-            {/* Cabinet Tab */}
-            <div class="glass-card-dark rounded-xl p-6 hover:shadow-xl transition-all transform hover:scale-105 cursor-pointer">
-              <div class="text-center">
-                <div class="text-4xl mb-4 text-blue-500">🔧</div>
-                <h4 class="text-xl font-bold mb-3 hebrew-title">ארון תחזוקה</h4>
-                <p class="text-gray-600 mb-4">ניהול ציוד ואביזרי תחזוקה</p>
-                <button class="btn-water text-white px-6 py-2 rounded-lg w-full">
-                  ניהול ציוד
-                </button>
+            {/* Cabinet Content */}
+            <div id="cabinet-content" class="service-content">
+              <div class="glass-card-dark p-8 rounded-2xl">
+                <h4 class="text-2xl font-bold hebrew-title mb-6 text-center text-gray-800">ארון תחזוקה וציוד מקצועי</h4>
+                
+                <div class="grid md:grid-cols-2 gap-8">
+                  <div class="space-y-6">
+                    <h5 class="text-xl font-semibold text-blue-600 border-b border-blue-200 pb-2">כימיקלים לבריכה</h5>
+                    <div class="space-y-3">
+                      <div class="flex items-center justify-between p-4 bg-white/70 rounded-lg hover:bg-white/90 transition-colors">
+                        <div>
+                          <div class="font-medium text-gray-800">כלור גרנולרי 5 ק״ג</div>
+                          <div class="text-sm text-gray-500">במלאי</div>
+                        </div>
+                        <div class="text-left">
+                          <div class="font-bold text-blue-600 hebrew-number">₪89</div>
+                          <button class="text-xs bg-blue-500 text-white px-3 py-1 rounded-full hover:bg-blue-600 transition-colors">
+                            <i class="fas fa-shopping-cart ml-1"></i>
+                            הזמן
+                          </button>
+                        </div>
+                      </div>
+                      <div class="flex items-center justify-between p-4 bg-white/70 rounded-lg hover:bg-white/90 transition-colors">
+                        <div>
+                          <div class="font-medium text-gray-800">כלור טבליות איטיות 200 גר׳</div>
+                          <div class="text-sm text-gray-500">במלאי</div>
+                        </div>
+                        <div class="text-left">
+                          <div class="font-bold text-blue-600 hebrew-number">₪156</div>
+                          <button class="text-xs bg-blue-500 text-white px-3 py-1 rounded-full hover:bg-blue-600 transition-colors">
+                            <i class="fas fa-shopping-cart ml-1"></i>
+                            הזמן
+                          </button>
+                        </div>
+                      </div>
+                      <div class="flex items-center justify-between p-4 bg-white/70 rounded-lg hover:bg-white/90 transition-colors">
+                        <div>
+                          <div class="font-medium text-gray-800">מוריד pH - 1.5 ק״ג</div>
+                          <div class="text-sm text-gray-500">מעט במלאי</div>
+                        </div>
+                        <div class="text-left">
+                          <div class="font-bold text-blue-600 hebrew-number">₪45</div>
+                          <button class="text-xs bg-blue-500 text-white px-3 py-1 rounded-full hover:bg-blue-600 transition-colors">
+                            <i class="fas fa-shopping-cart ml-1"></i>
+                            הזמן
+                          </button>
+                        </div>
+                      </div>
+                      <div class="flex items-center justify-between p-4 bg-white/70 rounded-lg hover:bg-white/90 transition-colors">
+                        <div>
+                          <div class="font-medium text-gray-800">מעלה pH - 1.5 ק״ג</div>
+                          <div class="text-sm text-gray-500">במלאי</div>
+                        </div>
+                        <div class="text-left">
+                          <div class="font-bold text-blue-600 hebrew-number">₪45</div>
+                          <button class="text-xs bg-blue-500 text-white px-3 py-1 rounded-full hover:bg-blue-600 transition-colors">
+                            <i class="fas fa-shopping-cart ml-1"></i>
+                            הזמן
+                          </button>
+                        </div>
+                      </div>
+                      <div class="flex items-center justify-between p-4 bg-white/70 rounded-lg hover:bg-white/90 transition-colors">
+                        <div>
+                          <div class="font-medium text-gray-800">אלגיסייד נגד אצות - 1 ליטר</div>
+                          <div class="text-sm text-gray-500">במלאי</div>
+                        </div>
+                        <div class="text-left">
+                          <div class="font-bold text-blue-600 hebrew-number">₪78</div>
+                          <button class="text-xs bg-blue-500 text-white px-3 py-1 rounded-full hover:bg-blue-600 transition-colors">
+                            <i class="fas fa-shopping-cart ml-1"></i>
+                            הזמן
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="space-y-6">
+                    <h5 class="text-xl font-semibold text-green-600 border-b border-green-200 pb-2">ציוד תחזוקה</h5>
+                    <div class="space-y-3">
+                      <div class="flex items-center justify-between p-4 bg-white/70 rounded-lg hover:bg-white/90 transition-colors">
+                        <div>
+                          <div class="font-medium text-gray-800">מברשת דפנות אלומיניום</div>
+                          <div class="text-sm text-gray-500">במלאי</div>
+                        </div>
+                        <div class="text-left">
+                          <div class="font-bold text-green-600 hebrew-number">₪120</div>
+                          <button class="text-xs bg-green-500 text-white px-3 py-1 rounded-full hover:bg-green-600 transition-colors">
+                            <i class="fas fa-wrench ml-1"></i>
+                            הזמן
+                          </button>
+                        </div>
+                      </div>
+                      <div class="flex items-center justify-between p-4 bg-white/70 rounded-lg hover:bg-white/90 transition-colors">
+                        <div>
+                          <div class="font-medium text-gray-800">רשת לעלים עם מוט 3 מטר</div>
+                          <div class="text-sm text-gray-500">במלאי</div>
+                        </div>
+                        <div class="text-left">
+                          <div class="font-bold text-green-600 hebrew-number">₪95</div>
+                          <button class="text-xs bg-green-500 text-white px-3 py-1 rounded-full hover:bg-green-600 transition-colors">
+                            <i class="fas fa-wrench ml-1"></i>
+                            הזמן
+                          </button>
+                        </div>
+                      </div>
+                      <div class="flex items-center justify-between p-4 bg-white/70 rounded-lg hover:bg-white/90 transition-colors">
+                        <div>
+                          <div class="font-medium text-gray-800">שואב בריכה ידני</div>
+                          <div class="text-sm text-gray-500">במלאי</div>
+                        </div>
+                        <div class="text-left">
+                          <div class="font-bold text-green-600 hebrew-number">₪180</div>
+                          <button class="text-xs bg-green-500 text-white px-3 py-1 rounded-full hover:bg-green-600 transition-colors">
+                            <i class="fas fa-wrench ml-1"></i>
+                            הזמן
+                          </button>
+                        </div>
+                      </div>
+                      <div class="flex items-center justify-between p-4 bg-white/70 rounded-lg hover:bg-white/90 transition-colors">
+                        <div>
+                          <div class="font-medium text-gray-800">ערכת בדיקה pH וכלור</div>
+                          <div class="text-sm text-gray-500">במלאי</div>
+                        </div>
+                        <div class="text-left">
+                          <div class="font-bold text-green-600 hebrew-number">₪65</div>
+                          <button class="text-xs bg-green-500 text-white px-3 py-1 rounded-full hover:bg-green-600 transition-colors">
+                            <i class="fas fa-wrench ml-1"></i>
+                            הזמן
+                          </button>
+                        </div>
+                      </div>
+                      <div class="flex items-center justify-between p-4 bg-white/70 rounded-lg hover:bg-white/90 transition-colors">
+                        <div>
+                          <div class="font-medium text-gray-800">פילטרים לסנן חול</div>
+                          <div class="text-sm text-gray-500">להזמנה</div>
+                        </div>
+                        <div class="text-left">
+                          <div class="font-bold text-green-600 hebrew-number">₪340</div>
+                          <button class="text-xs bg-green-500 text-white px-3 py-1 rounded-full hover:bg-green-600 transition-colors">
+                            <i class="fas fa-wrench ml-1"></i>
+                            הזמן
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="mt-8 text-center bg-gradient-to-r from-blue-50 to-green-50 p-6 rounded-xl">
+                  <h6 class="font-bold text-lg mb-2">משלוח עד הבית</h6>
+                  <p class="text-gray-600 mb-4">משלוח חינם להזמנות מעל ₪200 | זמן אספקה: 2-3 ימי עסקים</p>
+                  <button class="btn-water text-white px-8 py-3 rounded-xl font-medium">
+                    <i class="fas fa-truck ml-2"></i>
+                    צור קשר להזמנת ציוד
+                  </button>
+                </div>
               </div>
             </div>
 
-            {/* Subscription Tab */}
-            <div class="glass-card-dark rounded-xl p-6 hover:shadow-xl transition-all transform hover:scale-105 cursor-pointer">
-              <div class="text-center">
-                <div class="text-4xl mb-4 text-blue-500">📋</div>
-                <h4 class="text-xl font-bold mb-3 hebrew-title">מנויים</h4>
-                <p class="text-gray-600 mb-4">תוכניות מנוי לתחזוקה שוטפת</p>
-                <button class="btn-water text-white px-6 py-2 rounded-lg w-full">
-                  בחר מנוי
-                </button>
+            {/* Subscription Plans Content */}
+            <div id="subscription-content" class="service-content">
+              <div class="text-center mb-8">
+                <h4 class="text-2xl font-bold hebrew-title text-gray-800">תוכניות מנוי לתחזוקה מקצועית</h4>
+                <p class="text-gray-600 mt-2">בחרו את התוכנית המתאימה ביותר לבריכה שלכם</p>
+              </div>
+              
+              <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {/* This content is already rendered in the subscription section above */}
               </div>
             </div>
 
-            {/* Garden Tab */}
-            <div class="glass-card-dark rounded-xl p-6 hover:shadow-xl transition-all transform hover:scale-105 cursor-pointer">
-              <div class="text-center">
-                <div class="text-4xl mb-4 text-nature-500">🌿</div>
-                <h4 class="text-xl font-bold mb-3 hebrew-title">גינון</h4>
-                <p class="text-gray-600 mb-4">שירותי גינון וטיפוח נוף</p>
-                <button class="btn-nature text-white px-6 py-2 rounded-lg w-full">
-                  שירותי גינון
-                </button>
+            {/* Garden Services Content */}
+            <div id="garden-content" class="service-content">
+              <div class="glass-card-dark p-8 rounded-2xl">
+                <h4 class="text-2xl font-bold hebrew-title mb-6 text-center text-gray-800">שירותי גינון וטיפוח נוף מקצועי</h4>
+                
+                <div class="grid md:grid-cols-3 gap-8 mb-8">
+                  <div class="text-center p-6 bg-white/50 rounded-xl">
+                    <div class="w-20 h-20 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <i class="fas fa-cut text-white text-3xl"></i>
+                    </div>
+                    <h5 class="font-bold text-lg mb-3 text-gray-800">גיזום ועיצוב</h5>
+                    <p class="text-sm text-gray-600 mb-4">גיזום מקצועי של עצים, שיחים ועיצוב נוף יפהפה</p>
+                    <ul class="text-xs text-right space-y-1 text-gray-500">
+                      <li>• גיזום עצי פרי</li>
+                      <li>• עיצוב שיחי נוי</li>
+                      <li>• גיזום דקלים</li>
+                    </ul>
+                  </div>
+                  
+                  <div class="text-center p-6 bg-white/50 rounded-xl">
+                    <div class="w-20 h-20 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <i class="fas fa-seedling text-white text-3xl"></i>
+                    </div>
+                    <h5 class="font-bold text-lg mb-3 text-gray-800">נטיעה והשתלה</h5>
+                    <p class="text-sm text-gray-600 mb-4">נטיעת צמחים חדשים וטיפוח דשא ירוק ובריא</p>
+                    <ul class="text-xs text-right space-y-1 text-gray-500">
+                      <li>• זריעת דשא</li>
+                      <li>• נטיעת עצים</li>
+                      <li>• השתלת פרחים</li>
+                    </ul>
+                  </div>
+                  
+                  <div class="text-center p-6 bg-white/50 rounded-xl">
+                    <div class="w-20 h-20 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <i class="fas fa-tint text-white text-3xl"></i>
+                    </div>
+                    <h5 class="font-bold text-lg mb-3 text-gray-800">השקיה חכמה</h5>
+                    <p class="text-sm text-gray-600 mb-4">התקנת מערכות השקיה אוטומטיות וחסכוניות</p>
+                    <ul class="text-xs text-right space-y-1 text-gray-500">
+                      <li>• מערכות טפטוף</li>
+                      <li>• ממטרות אוטומטיות</li>
+                      <li>• בקרי השקיה חכמים</li>
+                    </ul>
+                  </div>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                  <div class="bg-gradient-to-br from-green-50 to-blue-50 p-6 rounded-xl">
+                    <h6 class="font-bold text-lg mb-3 text-gray-800">שירותים נוספים</h6>
+                    <ul class="space-y-2 text-sm">
+                      <li class="flex items-center gap-2">
+                        <i class="fas fa-check text-green-500"></i>
+                        <span>דישון ותזונת צמחים</span>
+                      </li>
+                      <li class="flex items-center gap-2">
+                        <i class="fas fa-check text-green-500"></i>
+                        <span>מיגון מעפורות</span>
+                      </li>
+                      <li class="flex items-center gap-2">
+                        <i class="fas fa-check text-green-500"></i>
+                        <span>טיפול במזיקים טבעי</span>
+                      </li>
+                      <li class="flex items-center gap-2">
+                        <i class="fas fa-check text-green-500"></i>
+                        <span>תכנון וייעוץ נופי</span>
+                      </li>
+                    </ul>
+                  </div>
+                  
+                  <div class="bg-gradient-to-br from-blue-50 to-green-50 p-6 rounded-xl">
+                    <h6 class="font-bold text-lg mb-3 text-gray-800">מחירים שקופים</h6>
+                    <div class="space-y-2 text-sm">
+                      <div class="flex justify-between">
+                        <span>גיזום עץ בינוני</span>
+                        <span class="font-medium hebrew-number">₪150-250</span>
+                      </div>
+                      <div class="flex justify-between">
+                        <span>זריעת דשא (מ״ר)</span>
+                        <span class="font-medium hebrew-number">₪25-35</span>
+                      </div>
+                      <div class="flex justify-between">
+                        <span>השקיה בטפטוף (מ״ר)</span>
+                        <span class="font-medium hebrew-number">₪18-28</span>
+                      </div>
+                      <div class="text-xs text-gray-500 mt-3">
+                        * המחירים כוללים חומרים ועבודה
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="mt-8 text-center">
+                  <button class="btn-nature text-white px-8 py-4 rounded-xl font-bold text-lg">
+                    <i class="fas fa-leaf ml-2"></i>
+                    קבלת הצעת מחיר מותאמת
+                  </button>
+                </div>
               </div>
             </div>
 
-            {/* Garden Subscription Tab */}
-            <div class="glass-card-dark rounded-xl p-6 hover:shadow-xl transition-all transform hover:scale-105 cursor-pointer">
-              <div class="text-center">
-                <div class="text-4xl mb-4 text-nature-500">🌱</div>
-                <h4 class="text-xl font-bold mb-3 hebrew-title">מנוי גינון</h4>
-                <p class="text-gray-600 mb-4">תוכניות מנוי לתחזוקת גינה</p>
-                <button class="btn-nature text-white px-6 py-2 rounded-lg w-full">
-                  מנוי גינה
-                </button>
+            {/* Garden Subscription Content */}
+            <div id="garden-subscription-content" class="service-content">
+              <div class="glass-card-dark p-8 rounded-2xl">
+                <h4 class="text-2xl font-bold hebrew-title mb-6 text-center text-gray-800">מנויי תחזוקת גינה קבועה</h4>
+                <p class="text-center text-gray-600 mb-8">תחזוקה שוטפת לגינה יפה וירוקה לאורך כל השנה</p>
+                
+                <div class="grid md:grid-cols-2 gap-8">
+                  <div class="bg-white p-6 rounded-xl shadow-lg border-2 border-green-200">
+                    <div class="text-center mb-4">
+                      <div class="w-16 h-16 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-leaf text-white text-2xl"></i>
+                      </div>
+                      <h5 class="text-xl font-bold text-green-600">מנוי בסיסי - גינה</h5>
+                      <div class="text-3xl font-bold text-gray-800 mt-2">
+                        <span class="hebrew-number">₪400</span>
+                        <span class="text-lg text-gray-500">/חודש</span>
+                      </div>
+                    </div>
+                    
+                    <div class="space-y-3 mb-6">
+                      <h6 class="font-semibold text-gray-800 border-b border-gray-200 pb-1">השירות כולל:</h6>
+                      <ul class="space-y-2 text-sm">
+                        <li class="flex items-center gap-2">
+                          <i class="fas fa-check text-green-500"></i>
+                          <span>ביקור חודשי (כ-2 שעות)</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                          <i class="fas fa-check text-green-500"></i>
+                          <span>גיזום שיחים וצמחי נוי</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                          <i class="fas fa-check text-green-500"></i>
+                          <span>ניכוש עשבים שוטים</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                          <i class="fas fa-check text-green-500"></i>
+                          <span>בדיקת מערכת השקיה</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                          <i class="fas fa-check text-green-500"></i>
+                          <span>ייעוץ טלפוני</span>
+                        </li>
+                      </ul>
+                      <div class="text-xs text-gray-500 mt-2 p-2 bg-gray-50 rounded">
+                        מתאים לגינות עד 100 מ״ר
+                      </div>
+                    </div>
+                    
+                    <button class="w-full btn-nature text-white py-3 rounded-xl font-medium">
+                      <i class="fas fa-seedling ml-2"></i>
+                      בחירת מנוי בסיסי
+                    </button>
+                  </div>
+                  
+                  <div class="bg-white p-6 rounded-xl shadow-lg border-2 border-green-400 relative">
+                    <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-4 py-1 rounded-full text-xs font-bold">
+                      הכי פופולרי
+                    </div>
+                    
+                    <div class="text-center mb-4">
+                      <div class="w-16 h-16 bg-gradient-to-br from-green-500 to-green-700 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-crown text-yellow-300 text-2xl"></i>
+                      </div>
+                      <h5 class="text-xl font-bold text-green-600">מנוי מלא - גינה</h5>
+                      <div class="text-3xl font-bold text-gray-800 mt-2">
+                        <span class="hebrew-number">₪800</span>
+                        <span class="text-lg text-gray-500">/חודש</span>
+                      </div>
+                      <div class="text-sm text-green-600 font-medium">חיסכון של 20% ביחס לשירות נקודתי</div>
+                    </div>
+                    
+                    <div class="space-y-3 mb-6">
+                      <h6 class="font-semibold text-gray-800 border-b border-gray-200 pb-1">השירות כולל:</h6>
+                      <ul class="space-y-2 text-sm">
+                        <li class="flex items-center gap-2">
+                          <i class="fas fa-check text-green-500"></i>
+                          <span>ביקורים שבועיים (כ-4 שעות)</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                          <i class="fas fa-check text-green-500"></i>
+                          <span>תחזוקת דשא מלאה</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                          <i class="fas fa-check text-green-500"></i>
+                          <span>השקיה אוטומטית מותאמת</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                          <i class="fas fa-check text-green-500"></i>
+                          <span>דישון וטיפוח צמחים</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                          <i class="fas fa-check text-green-500"></i>
+                          <span>החלפת צמחים עונתית</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                          <i class="fas fa-check text-green-500"></i>
+                          <span>טיפול מונע במזיקים</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                          <i class="fas fa-crown text-yellow-500"></i>
+                          <span>שירות חירום 24/7</span>
+                        </li>
+                      </ul>
+                      <div class="text-xs text-gray-500 mt-2 p-2 bg-green-50 rounded">
+                        מתאים לגינות עד 300 מ״ר | כולל חומרים ודשנים
+                      </div>
+                    </div>
+                    
+                    <button class="w-full bg-green-500 text-white py-3 rounded-xl font-medium hover:bg-green-600 transition-colors">
+                      <i class="fas fa-leaf ml-2"></i>
+                      בחירה מומלצת - מנוי מלא
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="mt-8 bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-xl text-center">
+                  <h6 class="font-bold text-lg mb-2">יתרונות המנוי</h6>
+                  <div class="grid md:grid-cols-3 gap-4 text-sm">
+                    <div class="flex items-center gap-2 justify-center">
+                      <i class="fas fa-calendar-check text-green-500"></i>
+                      <span>תזמון קבוע ואמין</span>
+                    </div>
+                    <div class="flex items-center gap-2 justify-center">
+                      <i class="fas fa-percentage text-blue-500"></i>
+                      <span>הנחות על שירותים נוספים</span>
+                    </div>
+                    <div class="flex items-center gap-2 justify-center">
+                      <i class="fas fa-phone text-purple-500"></i>
+                      <span>ייעוץ וחדקה ללא עלות</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
