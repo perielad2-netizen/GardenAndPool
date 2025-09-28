@@ -20,55 +20,77 @@ class AuthManager {
     this.initAuthStateListener();
   }
 
-  // Mock Supabase client for demonstration (replace with actual Supabase client)
+  // API-based authentication methods
   async signIn(email, password) {
     try {
-      // Simulate API call
       showNotification('מתחבר...', 'info');
       
-      // Mock success response
-      setTimeout(() => {
-        const mockUser = {
-          id: 'user-123',
-          email: email,
-          full_name: 'משתמש לדוגמה',
-          phone: '052-123-4567'
-        };
-        
-        this.setCurrentUser(mockUser);
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'שגיאה בהתחברות');
+      }
+      
+      if (data.success) {
+        this.setCurrentUser(data.user);
+        if (data.session_token) {
+          localStorage.setItem('session_token', data.session_token);
+        }
         showNotification('התחברתם בהצלחה!', 'success');
         this.closeAuthModal();
         this.updateUIForAuthenticatedUser();
-      }, 1500);
+      }
       
     } catch (error) {
       console.error('Sign in error:', error);
-      showNotification('שגיאה בהתחברות. אנא נסו שוב.', 'error');
+      showNotification(error.message || 'שגיאה בהתחברות. אנא נסו שוב.', 'error');
     }
   }
 
-  async signUp(email, password, fullName, phone) {
+  async signUp(email, password, firstName, lastName, phone) {
     try {
       showNotification('יוצר חשבון חדש...', 'info');
       
-      // Mock success response
-      setTimeout(() => {
-        const mockUser = {
-          id: 'user-' + Date.now(),
-          email: email,
-          full_name: fullName,
-          phone: phone
-        };
-        
-        this.setCurrentUser(mockUser);
-        showNotification('החשבון נוצר בהצלחה! ברוכים הבאים!', 'success');
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+          email, 
+          password, 
+          firstName, 
+          lastName, 
+          phone 
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'שגיאה בהרשמה');
+      }
+      
+      if (data.success) {
+        showNotification('החשבון נוצר בהצלחה! אנא התחברו למערכת.', 'success');
         this.closeAuthModal();
-        this.updateUIForAuthenticatedUser();
-      }, 2000);
+        // Show login modal for user to sign in
+        setTimeout(() => {
+          this.showLoginModal();
+        }, 1500);
+      }
       
     } catch (error) {
       console.error('Sign up error:', error);
-      showNotification('שגיאה ביצירת החשבון. אנא נסו שוב.', 'error');
+      showNotification(error.message || 'שגיאה ביצירת החשבון. אנא נסו שוב.', 'error');
     }
   }
 
@@ -76,15 +98,28 @@ class AuthManager {
     try {
       showNotification('שולח קישור לאיפוס סיסמה...', 'info');
       
-      // Mock success response
-      setTimeout(() => {
+      const response = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'שגיאה בשליחת קישור האיפוס');
+      }
+      
+      if (data.success) {
         showNotification('קישור לאיפוס הסיסמה נשלח לאימייל!', 'success');
         this.closeAuthModal();
-      }, 1500);
+      }
       
     } catch (error) {
       console.error('Reset password error:', error);
-      showNotification('שגיאה בשליחת קישור האיפוס. אנא נסו שוב.', 'error');
+      showNotification(error.message || 'שגיאה בשליחת קישור האיפוס. אנא נסו שוב.', 'error');
     }
   }
 
@@ -92,15 +127,27 @@ class AuthManager {
     try {
       showNotification('מתנתק...', 'info');
       
-      setTimeout(() => {
-        this.setCurrentUser(null);
-        showNotification('התנתקתם בהצלחה', 'success');
-        this.updateUIForGuestUser();
-      }, 500);
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('session_token')}`
+        }
+      });
+      
+      // Clear user data regardless of API response
+      this.setCurrentUser(null);
+      localStorage.removeItem('session_token');
+      showNotification('התנתקתם בהצלחה', 'success');
+      this.updateUIForGuestUser();
       
     } catch (error) {
       console.error('Sign out error:', error);
-      showNotification('שגיאה בהתנתקות', 'error');
+      // Still clear local data on error
+      this.setCurrentUser(null);
+      localStorage.removeItem('session_token');
+      this.updateUIForGuestUser();
+      showNotification('התנתקתם מהמערכת', 'info');
     }
   }
 
@@ -214,14 +261,15 @@ class AuthManager {
 
   handleRegister(form) {
     const formData = new FormData(form);
-    const fullName = formData.get('fullName');
+    const firstName = formData.get('firstName');
+    const lastName = formData.get('lastName');
     const phone = formData.get('phone');
     const email = formData.get('email');
     const password = formData.get('password');
     const confirmPassword = formData.get('confirmPassword');
     const termsAccepted = formData.get('terms');
 
-    if (!fullName || !email || !password || !confirmPassword) {
+    if (!firstName || !lastName || !email || !password || !confirmPassword || !phone) {
       showNotification('אנא מלאו את כל השדות הנדרשים', 'warning');
       return;
     }
@@ -241,7 +289,7 @@ class AuthManager {
       return;
     }
 
-    this.signUp(email, password, fullName, phone);
+    this.signUp(email, password, firstName, lastName, phone);
   }
 
   handleForgotPassword(form) {

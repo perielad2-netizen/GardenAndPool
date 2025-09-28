@@ -899,6 +899,7 @@ const App = () => {
                 <input
                   type="email"
                   id="login-email"
+                  name="email"
                   class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:outline-none text-right"
                   placeholder="הכניסו את האימייל שלכם"
                   required
@@ -910,6 +911,7 @@ const App = () => {
                 <input
                   type="password"
                   id="login-password"
+                  name="password"
                   class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:outline-none text-right"
                   placeholder="הכניסו את הסיסמה שלכם"
                   required
@@ -957,6 +959,7 @@ const App = () => {
                   <input
                     type="text"
                     id="register-first-name"
+                    name="firstName"
                     class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:outline-none text-right"
                     placeholder="שם פרטי"
                     required
@@ -968,6 +971,7 @@ const App = () => {
                   <input
                     type="text"
                     id="register-last-name"
+                    name="lastName"
                     class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:outline-none text-right"
                     placeholder="שם משפחה"
                     required
@@ -980,6 +984,7 @@ const App = () => {
                 <input
                   type="email"
                   id="register-email"
+                  name="email"
                   class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:outline-none text-right"
                   placeholder="הכניסו את האימייל שלכם"
                   required
@@ -991,6 +996,7 @@ const App = () => {
                 <input
                   type="tel"
                   id="register-phone"
+                  name="phone"
                   class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:outline-none text-right"
                   placeholder="052-123-4567"
                   required
@@ -1002,6 +1008,7 @@ const App = () => {
                 <input
                   type="password"
                   id="register-password"
+                  name="password"
                   class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:outline-none text-right"
                   placeholder="לפחות 6 תווים"
                   minlength="6"
@@ -1014,6 +1021,7 @@ const App = () => {
                 <input
                   type="password"
                   id="register-confirm-password"
+                  name="confirmPassword"
                   class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:outline-none text-right"
                   placeholder="הכניסו שוב את הסיסמה"
                   required
@@ -1021,7 +1029,7 @@ const App = () => {
               </div>
               
               <div class="flex items-center gap-2">
-                <input type="checkbox" id="register-terms" required class="rounded" />
+                <input type="checkbox" id="register-terms" name="terms" required class="rounded" />
                 <label for="register-terms" class="text-sm text-gray-600 text-right">
                   אני מסכים/ה ל<a href="#" class="text-blue-600 hover:text-blue-800">תנאי השימוש</a> ו<a href="#" class="text-blue-600 hover:text-blue-800">מדיניות הפרטיות</a>
                 </label>
@@ -1066,6 +1074,7 @@ const App = () => {
                 <input
                   type="email"
                   id="forgot-password-email"
+                  name="email"
                   class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:outline-none text-right"
                   placeholder="הכניסו את האימייל שלכם"
                   required
@@ -1100,9 +1109,112 @@ app.get('/', (c) => {
   return c.render(<App />)
 })
 
-// API Routes for future backend functionality
+// API Routes for backend functionality
 app.get('/api/health', (c) => {
   return c.json({ status: 'OK', timestamp: new Date().toISOString() })
+})
+
+// Authentication API Routes
+app.post('/api/auth/register', async (c) => {
+  try {
+    const { email, password, firstName, lastName, phone } = await c.req.json()
+    
+    // Validation
+    if (!email || !password || !firstName || !lastName || !phone) {
+      return c.json({ error: 'All fields are required' }, 400)
+    }
+    
+    if (password.length < 6) {
+      return c.json({ error: 'Password must be at least 6 characters' }, 400)
+    }
+    
+    // TODO: Implement actual Supabase registration
+    // For now, return mock success response
+    const mockUser = {
+      id: `user_${Date.now()}`,
+      email,
+      full_name: `${firstName} ${lastName}`,
+      phone,
+      created_at: new Date().toISOString()
+    }
+    
+    return c.json({
+      success: true,
+      message: 'User registered successfully',
+      user: mockUser
+    })
+    
+  } catch (error) {
+    console.error('Registration error:', error)
+    return c.json({ error: 'Internal server error' }, 500)
+  }
+})
+
+app.post('/api/auth/login', async (c) => {
+  try {
+    const { email, password } = await c.req.json()
+    
+    // Validation
+    if (!email || !password) {
+      return c.json({ error: 'Email and password are required' }, 400)
+    }
+    
+    // TODO: Implement actual Supabase authentication
+    // For now, return mock success response
+    const mockUser = {
+      id: 'user_12345',
+      email,
+      full_name: 'משתמש לדוגמה',
+      phone: '052-123-4567'
+    }
+    
+    return c.json({
+      success: true,
+      message: 'Login successful',
+      user: mockUser,
+      session_token: 'mock_session_token_' + Date.now()
+    })
+    
+  } catch (error) {
+    console.error('Login error:', error)
+    return c.json({ error: 'Internal server error' }, 500)
+  }
+})
+
+app.post('/api/auth/forgot-password', async (c) => {
+  try {
+    const { email } = await c.req.json()
+    
+    // Validation
+    if (!email) {
+      return c.json({ error: 'Email is required' }, 400)
+    }
+    
+    // TODO: Implement actual Supabase password reset
+    // For now, return mock success response
+    return c.json({
+      success: true,
+      message: 'Password reset email sent successfully'
+    })
+    
+  } catch (error) {
+    console.error('Password reset error:', error)
+    return c.json({ error: 'Internal server error' }, 500)
+  }
+})
+
+app.post('/api/auth/logout', async (c) => {
+  try {
+    // TODO: Implement actual Supabase logout
+    return c.json({
+      success: true,
+      message: 'Logout successful'
+    })
+    
+  } catch (error) {
+    console.error('Logout error:', error)
+    return c.json({ error: 'Internal server error' }, 500)
+  }
 })
 
 app.get('/api/services', (c) => {
