@@ -147,7 +147,41 @@ app.get('/', (c) => {
             {/* Scheduler */}
             <div id="panel-scheduler" className="card hidden">
               <div className="heading mb-2">תיאום טכנאי</div>
-              <div className="text-sm text-slate-600">Calendar integration coming soon. This will connect to your chosen calendar provider.</div>
+              <form id="schedulerForm" className="grid gap-3">
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-sm text-slate-600">סוג שירות</label>
+                    <select id="sched_service" className="border rounded-lg px-3 py-2 w-full">
+                      <option value="maintenance">תחזוקה</option>
+                      <option value="cleaning">ניקיון</option>
+                      <option value="repair">תיקון</option>
+                      <option value="garden">גינון</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-sm text-slate-600">תאריך</label>
+                    <input id="sched_date" type="date" className="border rounded-lg px-3 py-2 w-full" required />
+                  </div>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-sm text-slate-600">שעת התחלה</label>
+                    <input id="sched_start" type="time" className="border rounded-lg px-3 py-2 w-full" required />
+                  </div>
+                  <div>
+                    <label className="text-sm text-slate-600">שעת סיום</label>
+                    <input id="sched_end" type="time" className="border rounded-lg px-3 py-2 w-full" required />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm text-slate-600">הערות (אופציונלי)</label>
+                  <textarea id="sched_notes" className="border rounded-lg px-3 py-2 w-full" placeholder="שער, כלב, חניה, קוד וכו'"></textarea>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button type="submit" className="btn btn-primary"><i className="fas fa-calendar-check"></i> בקש תור</button>
+                  <span id="schedulerStatus" className="text-sm text-slate-600"></span>
+                </div>
+              </form>
             </div>
 
             {/* Cabinet */}

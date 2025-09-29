@@ -116,6 +116,8 @@
     const headerAuthZone = document.getElementById('headerAuthZone');
 
     async function refreshPortal() {
+      // Allow external triggers
+      window.addEventListener('portal-refresh', async ()=> { await refreshPortal(); });
       const { data: { user } } = await client.auth.getUser();
       const modal = document.getElementById('authModal');
       if (!user) {
@@ -317,6 +319,49 @@
         diagOut.textContent = JSON.stringify(data, null, 2);
       } catch (err) {
         diagOut.textContent = 'Error during analysis.';
+      }
+    });
+  }
+
+  // Scheduler submit
+  const schedulerForm = document.getElementById('schedulerForm');
+  if (schedulerForm) {
+    schedulerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const status = document.getElementById('schedulerStatus');
+      status && (status.textContent = 'שומר...');
+      try {
+        const client = await supa();
+        if (!client) { status && (status.textContent = 'שגיאת חיבור'); return; }
+        const { data: { user } } = await client.auth.getUser();
+        if (!user) { status && (status.textContent = 'יש להתחבר'); return; }
+
+        const service = document.getElementById('sched_service').value;
+        const date = document.getElementById('sched_date').value;
+        const start = document.getElementById('sched_start').value;
+        const end = document.getElementById('sched_end').value;
+        const notes = document.getElementById('sched_notes').value.trim() || null;
+        if (!date || !start || !end) { status && (status.textContent = 'נא למלא תאריך ושעות'); return; }
+        const startIso = new Date(`${date}T${start}:00`).toISOString();
+        const endIso = new Date(`${date}T${end}:00`).toISOString();
+        if (endIso <= startIso) { status && (status.textContent = 'שעת סיום חייבת להיות אחרי ההתחלה'); return; }
+
+        const payload = {
+          user_id: user.id,
+          service_type: service,
+          window_start: startIso,
+          window_end: endIso,
+          notes
+        };
+        const { error } = await client.from('appointments').insert(payload);
+        status && (status.textContent = error ? ('שגיאה: ' + error.message) : 'נשמר!');
+        if (!error) {
+          // refresh portal appointments if visible
+          const evt = new Event('portal-refresh');
+          window.dispatchEvent(evt);
+        }
+      } catch (e) {
+        status && (status.textContent = 'שגיאה');
       }
     });
   }
