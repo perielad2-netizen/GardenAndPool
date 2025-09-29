@@ -163,15 +163,15 @@ app.get('/', (c) => {
                     <input id="sched_date" type="date" className="border rounded-lg px-3 py-2 w-full" required />
                   </div>
                 </div>
-                <div className="grid sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-sm text-slate-600">שעת התחלה</label>
-                    <input id="sched_start" type="time" className="border rounded-lg px-3 py-2 w-full" required />
-                  </div>
-                  <div>
-                    <label className="text-sm text-slate-600">שעת סיום</label>
-                    <input id="sched_end" type="time" className="border rounded-lg px-3 py-2 w-full" required />
-                  </div>
+                <div>
+                  <label className="text-sm text-slate-600">חלון שעות (2 שעות)</label>
+                  <select id="sched_window" className="border rounded-lg px-3 py-2 w-full" required>
+                    <option value="08:00">08:00–10:00</option>
+                    <option value="10:00">10:00–12:00</option>
+                    <option value="12:00">12:00–14:00</option>
+                    <option value="14:00">14:00–16:00</option>
+                    <option value="16:00">16:00–18:00</option>
+                  </select>
                 </div>
                 <div>
                   <label className="text-sm text-slate-600">הערות (אופציונלי)</label>

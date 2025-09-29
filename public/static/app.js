@@ -338,13 +338,15 @@
 
         const service = document.getElementById('sched_service').value;
         const date = document.getElementById('sched_date').value;
-        const start = document.getElementById('sched_start').value;
-        const end = document.getElementById('sched_end').value;
+        const winStart = document.getElementById('sched_window').value; // e.g. 08:00
         const notes = document.getElementById('sched_notes').value.trim() || null;
-        if (!date || !start || !end) { status && (status.textContent = 'נא למלא תאריך ושעות'); return; }
-        const startIso = new Date(`${date}T${start}:00`).toISOString();
-        const endIso = new Date(`${date}T${end}:00`).toISOString();
-        if (endIso <= startIso) { status && (status.textContent = 'שעת סיום חייבת להיות אחרי ההתחלה'); return; }
+        if (!date || !winStart) { status && (status.textContent = 'נא למלא תאריך וחלון'); return; }
+        const startIso = new Date(`${date}T${winStart}:00`).toISOString();
+        // calculate 2-hour end
+        const [h, m] = winStart.split(':').map(Number);
+        const endDate = new Date(`${date}T${winStart}:00`);
+        endDate.setHours(h + 2);
+        const endIso = endDate.toISOString();
 
         const payload = {
           user_id: user.id,
@@ -353,6 +355,14 @@
           window_end: endIso,
           notes
         };
+        // Check availability before insert (server-side constraint will enforce too)
+        const existing = await client.from('appointments')
+          .select('id')
+          .eq('window_start', startIso)
+          .eq('window_end', endIso)
+          .limit(1);
+        if (existing.data && existing.data.length > 0) { status && (status.textContent = 'החלון תפוס, בחר/י חלון אחר'); return; }
+
         const { error } = await client.from('appointments').insert(payload);
         status && (status.textContent = error ? ('שגיאה: ' + error.message) : 'נשמר!');
         if (!error) {
