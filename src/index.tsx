@@ -39,11 +39,18 @@ app.get('/', (c) => {
               <div className="text-white/85 text-[13px]">שירותי בריכות, גינון ונקיון מקצועי</div>
             </div>
           </div>
-          <nav className="hidden sm:flex items-center gap-5 text-white/90 text-sm">
-            <a href="#services" className="hover:text-white transition">שירותים</a>
-            <a href="#plans" className="hover:text-white transition">מנויים</a>
-            <a href="#contact" className="hover:text-white transition">צור קשר</a>
-          </nav>
+          <div className="flex items-center gap-3">
+            <nav className="hidden sm:flex items-center gap-5 text-white/90 text-sm">
+              <a href="#services" className="hover:text-white transition">שירותים</a>
+              <a href="#plans" className="hover:text-white transition">מנויים</a>
+              <a href="#portal" className="hover:text-white transition">הפורטל שלי</a>
+              <a href="#contact" className="hover:text-white transition">צור קשר</a>
+            </nav>
+            <a href="#auth" id="openAuthModal" className="btn btn-cta-header">
+              <i className="fas fa-user-lock"></i>
+              התחברות / הרשמה
+            </a>
+          </div>
         </div>
       </header>
 
@@ -56,26 +63,26 @@ app.get('/', (c) => {
           <h1 className="text-[2rem] sm:text-[2.6rem] font-extrabold text-white drop-shadow-sm mb-2">הכל במקום אחד</h1>
           <p className="text-white/90 mb-6">בריכות • גינון • ניקיון — פתרון מקצועי ומיידי.</p>
           <div className="flex gap-3">
-            <a href="#diagnosis" className="inline-flex items-center gap-2 bg-white text-blue-700 px-4 py-2 rounded-lg shadow hover:bg-slate-50 transition">
+            <a href="#diagnosis" className="btn btn-cta-primary">
               <i className="fas fa-camera"></i>
               אבחון מהיר
             </a>
-            <a href="tel:0500000000" className="inline-flex items-center gap-2 bg-emerald-500 text-white px-4 py-2 rounded-lg shadow hover:bg-emerald-600 transition">
+            <a href="tel:0500000000" className="btn btn-cta-secondary">
               <i className="fas fa-phone"></i>
               התקשר עכשיו
             </a>
           </div>
 
           <div className="mt-8 grid grid-cols-3 gap-3 text-center">
-            <div className="bg-white/20 rounded-xl p-3 text-white">
+            <div className="pill text-white">
               <div className="text-2xl font-bold" data-counter data-target="10">0</div>
               <div className="text-sm">שנות ניסיון</div>
             </div>
-            <div className="bg-white/20 rounded-xl p-3 text-white">
+            <div className="pill text-white">
               <div className="text-2xl font-bold" data-counter data-target="500">0</div>
               <div className="text-sm">לקוחות מרוצים</div>
             </div>
-            <div className="bg-white/20 rounded-xl p-3 text-white">
+            <div className="pill text-white">
               <div className="text-2xl font-bold">24/7</div>
               <div className="text-sm">זמינות מיידית</div>
             </div>
@@ -97,14 +104,15 @@ app.get('/', (c) => {
               { id: 'garden', icon: 'fa-seedling', label: 'גינון' },
               { id: 'garden-subscription', icon: 'fa-leaf', label: 'מנויי גינון' },
               { id: 'chat', icon: 'fa-robot', label: 'צ׳אט חכם' },
+              { id: 'auth', icon: 'fa-user-lock', label: 'התחברות / הרשמה' },
             ].map((t) => (
               <button
                 key={t.id}
                 data-tab={t.id}
-                className="flex items-center justify-between gap-2 rounded-xl bg-white/90 border border-slate-200 px-3 py-3 shadow-sm hover:shadow-md active:scale-[0.99] transition"
+                className="chip"
               >
                 <span className="text-slate-800 text-sm font-medium">{t.label}</span>
-                <span className="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 grid place-items-center">
+                <span className="icon-bubble">
                   <i className={`fas ${t.icon}`}></i>
                 </span>
               </button>
@@ -119,7 +127,7 @@ app.get('/', (c) => {
               <form id="diagnosisForm" className="space-y-3">
                 <input id="diagFile" type="file" name="image" accept="image/*" className="hidden" required />
                 <div className="flex items-center gap-2">
-                  <label htmlFor="diagFile" className="inline-flex items-center gap-2 bg-white text-blue-700 px-4 py-2 rounded-lg shadow hover:bg-slate-50 transition cursor-pointer">
+                  <label htmlFor="diagFile" className="btn water-outline cursor-pointer">
                     <i className="fas fa-upload"></i>
                     העלאת תמונה
                   </label>
@@ -200,6 +208,62 @@ app.get('/', (c) => {
               <div id="chatLog" className="mt-3 text-sm text-slate-700 space-y-2"></div>
               <p className="text-xs text-slate-500 mt-2">Tip: add OPENAI_API_KEY to enable real AI responses. Irrelevant questions will be filtered.</p>
             </div>
+
+            {/* Auth */}
+            <div id="panel-auth" className="card hidden">
+              <div className="heading mb-2">התחברות / הרשמה</div>
+              <div className="grid gap-3">
+                <input id="authEmail" type="email" placeholder="דוא&quot;ל" className="border rounded-lg px-3 py-2" />
+                <input id="authPassword" type="password" placeholder="סיסמה" className="border rounded-lg px-3 py-2" />
+                <div className="flex gap-2">
+                  <button id="btnLogin" className="btn btn-primary">התחבר</button>
+                  <button id="btnRegister" className="btn">הירשם</button>
+                  <button id="btnReset" className="btn">איפוס סיסמה</button>
+                  <button id="btnLogout" className="btn hidden">התנתק</button>
+                </div>
+                <div id="authStatus" className="text-sm text-slate-600"></div>
+              </div>
+            </div>
+
+            {/* Portal (read-only) */}
+            <div id="panel-portal" className="card hidden">
+              <div className="heading mb-2">הפורטל שלי</div>
+              <div id="portalSignedOut" className="text-sm text-slate-600">יש להתחבר כדי לצפות בפרטים האישיים.</div>
+              <div id="portalContent" className="hidden space-y-3">
+                <div className="rounded-xl border p-3">
+                  <div className="font-semibold mb-1">פרופיל</div>
+                  <div id="portalProfile" className="text-sm text-slate-700"></div>
+                </div>
+                <div className="rounded-xl border p-3">
+                  <div className="font-semibold mb-1">מנויים</div>
+                  <div id="portalSubs" className="text-sm text-slate-700"></div>
+                </div>
+                <div className="rounded-xl border p-3">
+                  <div className="font-semibold mb-1">תורים קרובים</div>
+                  <div id="portalAppts" className="text-sm text-slate-700"></div>
+                </div>
+                <div className="rounded-xl border p-3">
+                  <div className="font-semibold mb-1">חשבוניות</div>
+                  <div id="portalInvoices" className="text-sm text-slate-700"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="portal" className="bg-white">
+        <div className="max-w-5xl mx-auto px-4 py-10">
+          <h2 className="text-2xl font-bold mb-6">הפורטל שלי</h2>
+          <div className="grid gap-4">
+            <div className="rounded-2xl border bg-white p-5 shadow-sm">
+              <div className="font-semibold mb-2">התחברות</div>
+              <div className="text-sm text-slate-600">השתמש/י בטופס ההתחברות תחת שירותים → התחברות / הרשמה</div>
+            </div>
+            <div className="rounded-2xl border bg-white p-5 shadow-sm">
+              <div className="font-semibold mb-2">סטטוס</div>
+              <div id="portalSummary" className="text-sm text-slate-700">טרם מחובר/ת</div>
+            </div>
           </div>
         </div>
       </section>
@@ -254,6 +318,44 @@ app.get('/', (c) => {
         <div className="text-center text-xs text-white/60 pb-6">© {new Date().getFullYear()} מים וטבע</div>
       </footer>
 
+      {/* Feature Modal */}
+      <div id="featureModal" className="fixed inset-0 z-50 hidden">
+        <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm"></div>
+        <div className="absolute inset-x-4 bottom-8 sm:inset-0 sm:m-auto sm:max-w-md">
+          <div className="rounded-2xl bg-white shadow-xl p-5">
+            <div className="font-bold mb-2">Feature temporarily unavailable</div>
+            <p className="text-sm text-slate-600">AI diagnostics and smart chat are under maintenance for this environment. Please try again later.</p>
+            <div className="mt-4 text-left">
+              <button id="featureModalClose" className="btn btn-primary">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Auth Modal (RTL) */}
+      <div id="authModal" className="fixed inset-0 z-50 hidden">
+        <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm"></div>
+        <div className="absolute inset-x-4 bottom-8 sm:inset-0 sm:m-auto sm:max-w-md">
+          <div className="rounded-2xl bg-white shadow-xl p-5">
+            <div className="font-bold mb-2">התחברות / הרשמה</div>
+            <div className="grid gap-3">
+              <input id="authEmailModal" type="email" placeholder="דוא\"ל" className="border rounded-lg px-3 py-2" />
+              <input id="authPasswordModal" type="password" placeholder="סיסמה" className="border rounded-lg px-3 py-2" />
+              <div className="flex gap-2">
+                <button id="btnLoginModal" className="btn btn-primary">התחבר</button>
+                <button id="btnRegisterModal" className="btn">הירשם</button>
+                <button id="btnResetModal" className="btn">איפוס סיסמה</button>
+                <button id="btnLogoutModal" className="btn hidden">התנתק</button>
+              </div>
+              <div id="authStatusModal" className="text-sm text-slate-600"></div>
+            </div>
+            <div className="mt-4 text-left">
+              <button id="authModalClose" className="btn">סגור</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Sticky Mobile Action Bar */}
       <nav id="bottomNav" className="sm:hidden fixed bottom-0 inset-x-0 z-40">
         <div className="max-w-5xl mx-auto px-4 pb-[calc(env(safe-area-inset-bottom)+8px)]">
@@ -286,6 +388,23 @@ app.get('/', (c) => {
 // ------------------- API: Health & Config -------------------
 app.get('/api/health', (c) => c.json({ ok: true }))
 
+// New: env-backed config endpoint (use this on frontend)
+app.get('/api/config/env', (c) => {
+  return c.json({
+    name: 'מים וטבע',
+    plans: ['basic', 'monthly', 'yearly', 'vip', 'premium'],
+    supabase: {
+      url: c.env.PUBLIC_SUPABASE_URL || '',
+      anon: c.env.PUBLIC_SUPABASE_ANON_KEY || ''
+    },
+    features: {
+      aiEnabled: Boolean(c.env.OPENAI_API_KEY),
+      stripeEnabled: Boolean(c.env.STRIPE_SECRET_KEY)
+    }
+  })
+})
+
+// Legacy endpoint kept for compatibility
 app.get('/api/config/public', (c) => {
   return c.json({
     name: 'מים וטבע',
@@ -293,7 +412,23 @@ app.get('/api/config/public', (c) => {
     supabase: {
       url: c.env.PUBLIC_SUPABASE_URL || '',
       anon: c.env.PUBLIC_SUPABASE_ANON_KEY || ''
+    },
+    features: {
+      aiEnabled: Boolean(c.env.OPENAI_API_KEY),
+      stripeEnabled: Boolean(c.env.STRIPE_SECRET_KEY)
     }
+  })
+})
+
+// Debug endpoint to inspect env in runtime (temporary)
+app.get('/api/debug/env', (c) => {
+  const keys = Object.keys(c.env ?? {})
+  return c.json({
+    keys,
+    hasUrl: Boolean(c.env.PUBLIC_SUPABASE_URL),
+    hasAnon: Boolean(c.env.PUBLIC_SUPABASE_ANON_KEY),
+    url: c.env.PUBLIC_SUPABASE_URL || null,
+    anonLen: c.env.PUBLIC_SUPABASE_ANON_KEY ? ('' + c.env.PUBLIC_SUPABASE_ANON_KEY).length : 0
   })
 })
 
