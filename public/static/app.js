@@ -25,12 +25,20 @@
     'subscription': document.getElementById('panel-subscription'),
     'garden': document.getElementById('panel-garden'),
     'garden-subscription': document.getElementById('panel-garden-subscription'),
-    'chat': document.getElementById('panel-chat')
+    'chat': document.getElementById('panel-chat'),
+    'auth': document.getElementById('panel-auth'),
+    'portal': document.getElementById('panel-portal')
   };
-  function setActive(id){
+  function setActive(id, opts){
+    const o = Object.assign({ scroll: true }, opts || {});
     Object.values(panels).forEach(el => el && el.classList.add('hidden'));
     const panel = panels[id];
-    if(panel) panel.classList.remove('hidden');
+    if(panel){
+      panel.classList.remove('hidden');
+      if (o.scroll) {
+        try{ panel.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch(_){}
+      }
+    }
 
     // highlight chip
     document.querySelectorAll('#serviceChips button').forEach(b => b.classList.remove('active'));
@@ -42,10 +50,204 @@
     const icon = document.querySelector(`#bottomNav [data-tab="${id}"] .nav-icon`);
     if (icon) icon.classList.add('active');
   }
-  buttons.forEach(btn => btn.addEventListener('click', () => setActive(btn.getAttribute('data-tab'))));
+  buttons.forEach(btn => btn.addEventListener('click', (e) => { e.preventDefault(); const id = btn.getAttribute('data-tab'); if (id) { setActive(id, { scroll: true }); location.hash = id; } }));
 
-  // Default to Diagnosis on load
-  setActive('diagnosis');
+  // Default panel from URL (#panel or ?panel=) with fallback to diagnosis
+  const hashPanel = (location.hash || '').replace('#','');
+  const urlPanel = new URLSearchParams(location.search).get('panel');
+  const initial = panels[hashPanel] ? hashPanel : (panels[urlPanel] ? urlPanel : 'diagnosis');
+  // Do not auto-scroll on initial load unless a panel was explicitly requested
+  setActive(initial, { scroll: Boolean(hashPanel || urlPanel) });
+
+  // Keep hash in sync when switching
+  window.addEventListener('hashchange', () => {
+    const h = (location.hash || '').replace('#','');
+    if (panels[h]) setActive(h, { scroll: true });
+  });
+
+  // ---- Supabase Auth + Portal (read-only) ----
+  async function supa() {
+    try {
+      const res = await fetch('/api/config/env');
+      const cfg = await res.json();
+      const url = cfg?.supabase?.url;
+      const anon = cfg?.supabase?.anon;
+      if (!url || !anon || !window.supabase) return null;
+      return window.supabase.createClient(url, anon);
+    } catch { return null; }
+  }
+
+  (async () => {
+    const client = await supa();
+    if (!client) return;
+
+    const authEmail = document.getElementById('authEmail');
+    const authPassword = document.getElementById('authPassword');
+    const btnLogin = document.getElementById('btnLogin');
+    const btnRegister = document.getElementById('btnRegister');
+    const btnReset = document.getElementById('btnReset');
+    const btnLogout = document.getElementById('btnLogout');
+    const authStatus = document.getElementById('authStatus');
+
+    const portalSignedOut = document.getElementById('portalSignedOut');
+    const portalContent = document.getElementById('portalContent');
+    const portalProfile = document.getElementById('portalProfile');
+    const portalSubs = document.getElementById('portalSubs');
+    const portalAppts = document.getElementById('portalAppts');
+    const portalInvoices = document.getElementById('portalInvoices');
+    const portalSummary = document.getElementById('portalSummary');
+
+    async function refreshPortal() {
+      const { data: { user } } = await client.auth.getUser();
+      if (!user) {
+        portalSignedOut?.classList.remove('hidden');
+        portalContent?.classList.add('hidden');
+        portalSummary && (portalSummary.textContent = 'טרם מחובר/ת');
+        btnLogout?.classList.add('hidden');
+        return;
+      }
+      btnLogout?.classList.remove('hidden');
+      portalSignedOut?.classList.add('hidden');
+      portalContent?.classList.remove('hidden');
+      portalSummary && (portalSummary.textContent = `מחובר/ת כ-${user.email}`);
+
+      // Basic read-only pulls
+      const uid = user.id;
+      const prof = await client.from('profiles').select('*').eq('id', uid).maybeSingle();
+      if (!portalProfile) return;
+      if (!prof.data) {
+        portalProfile.innerHTML = `
+          <div class="text-sm text-slate-700 mb-2">אין פרופיל עדיין – מלא/י את הפרטים וניצור עבורך כרטיס לקוח.</div>
+          <div class="grid gap-2">
+            <input id="pf_full_name" class="border rounded-lg px-3 py-2" placeholder="שם מלא" />
+            <input id="pf_phone" class="border rounded-lg px-3 py-2" placeholder="טלפון" />
+            <input id="pf_address" class="border rounded-lg px-3 py-2" placeholder="כתובת" />
+            <div class="grid grid-cols-2 gap-2">
+              <input id="pf_pool_type" class="border rounded-lg px-3 py-2" placeholder="סוג בריכה" />
+              <input id="pf_pool_size" class="border rounded-lg px-3 py-2" placeholder="גודל בריכה" />
+            </div>
+            <textarea id="pf_notes" class="border rounded-lg px-3 py-2" placeholder="הוראות מיוחדות"></textarea>
+            <button id="pf_save" class="btn btn-primary">שמירת פרופיל</button>
+            <div id="pf_status" class="text-xs text-slate-500"></div>
+          </div>
+        `;
+        const pfSave = document.getElementById('pf_save');
+        const status = document.getElementById('pf_status');
+        pfSave?.addEventListener('click', async () => {
+          status.textContent = 'שומר...';
+          const payload = {
+            id: uid,
+            full_name: document.getElementById('pf_full_name').value.trim() || (user.email || '').split('@')[0],
+            phone: document.getElementById('pf_phone').value.trim() || null,
+            address: document.getElementById('pf_address').value.trim() || null,
+            pool_type: document.getElementById('pf_pool_type').value.trim() || null,
+            pool_size: document.getElementById('pf_pool_size').value.trim() || null,
+            special_instructions: document.getElementById('pf_notes').value.trim() || null,
+          };
+          const { error } = await client.from('profiles').upsert(payload);
+          status.textContent = error ? ('שגיאה: ' + error.message) : 'נשמר בהצלחה';
+          if (!error) await refreshPortal();
+        });
+      } else {
+        const p = prof.data;
+        portalProfile.innerHTML = `
+          <div class="grid gap-1">
+            <div><span class="text-slate-500">שם:</span> ${p.full_name || ''}</div>
+            <div><span class="text-slate-500">טלפון:</span> ${p.phone || ''}</div>
+            <div><span class="text-slate-500">כתובת:</span> ${p.address || ''}</div>
+            <div><span class="text-slate-500">סוג בריכה:</span> ${p.pool_type || ''}</div>
+            <div><span class="text-slate-500">גודל בריכה:</span> ${p.pool_size || ''}</div>
+            <div><span class="text-slate-500">הוראות:</span> ${p.special_instructions || ''}</div>
+          </div>
+        `;
+      }
+
+      const subs = await client.from('subscriptions').select('*').eq('user_id', uid).limit(5);
+      if (portalSubs) {
+        if (!subs.data || subs.data.length === 0) portalSubs.textContent = 'אין מנויים';
+        else portalSubs.innerHTML = subs.data.map(s => `
+          <div class="flex items-center justify-between border rounded-lg p-2 mb-2">
+            <div>
+              <div class="font-medium">${s.plan_type}</div>
+              <div class="text-xs text-slate-500">${s.status} • מתחיל ב-${s.start_date || ''}</div>
+            </div>
+            <div class="text-blue-700 font-semibold">${s.price ? '₪'+s.price : ''}</div>
+          </div>
+        `).join('');
+      }
+
+      const appts = await client.rpc('get_upcoming_appointments_for_user', { p_user: uid }).catch(() => ({ data: null }));
+      if (!appts || !appts.data) {
+        // fallback simple select
+        const a = await client.from('appointments').select('*').order('scheduled_date',{ascending:true}).limit(5);
+        if (portalAppts) {
+          if (!a.data || a.data.length===0) portalAppts.textContent = 'אין תורים';
+          else portalAppts.innerHTML = a.data.map(x => `
+            <div class="flex items-center justify-between border rounded-lg p-2 mb-2">
+              <div>
+                <div class="font-medium">${x.service_type}</div>
+                <div class="text-xs text-slate-500">${new Date(x.scheduled_date).toLocaleString('he-IL')}</div>
+              </div>
+              <div class="text-xs text-slate-500">${x.status}</div>
+            </div>
+          `).join('');
+        }
+      } else {
+        if (portalAppts) portalAppts.innerHTML = appts.data.map(x => `
+          <div class="flex items-center justify-between border rounded-lg p-2 mb-2">
+            <div>
+              <div class="font-medium">${x.service_type}</div>
+              <div class="text-xs text-slate-500">${new Date(x.scheduled_date).toLocaleString('he-IL')}</div>
+            </div>
+            <div class="text-xs text-slate-500">${x.status}</div>
+          </div>
+        `).join('');
+      }
+
+      const inv = await client.from('invoices').select('*').eq('user_id', uid).order('due_date', { ascending: false }).limit(5);
+      if (portalInvoices) {
+        if (!inv.data || inv.data.length===0) portalInvoices.textContent = 'אין חשבוניות';
+        else portalInvoices.innerHTML = inv.data.map(i => `
+          <div class="flex items-center justify-between border rounded-lg p-2 mb-2">
+            <div>
+              <div class="font-medium">חשבונית #${i.invoice_number || i.id.slice(0,6)}</div>
+              <div class="text-xs text-slate-500">לתשלום עד ${i.due_date || ''}</div>
+            </div>
+            <div class="font-semibold ${i.status==='paid'?'text-emerald-600':'text-blue-700'}">₪${i.amount}</div>
+          </div>
+        `).join('');
+      }
+    }
+
+    btnLogin?.addEventListener('click', async () => {
+      authStatus.textContent = 'מתחבר...';
+      const { error } = await client.auth.signInWithPassword({ email: authEmail.value, password: authPassword.value });
+      authStatus.textContent = error ? ('שגיאה: ' + error.message) : 'מחובר';
+      await refreshPortal();
+    });
+
+    btnRegister?.addEventListener('click', async () => {
+      authStatus.textContent = 'נרשם...';
+      const { error } = await client.auth.signUp({ email: authEmail.value, password: authPassword.value });
+      authStatus.textContent = error ? ('שגיאה: ' + error.message) : 'נרשם! בדוק/י דוא"ל לאימות';
+      await refreshPortal();
+    });
+
+    btnReset?.addEventListener('click', async () => {
+      authStatus.textContent = 'שולח קישור לאיפוס...';
+      const { error } = await client.auth.resetPasswordForEmail(authEmail.value, { redirectTo: window.location.origin });
+      authStatus.textContent = error ? ('שגיאה: ' + error.message) : 'קישור איפוס נשלח לדוא"ל';
+    });
+
+    btnLogout?.addEventListener('click', async () => {
+      await client.auth.signOut();
+      authStatus.textContent = 'התנתקת';
+      await refreshPortal();
+    });
+
+    // On load, refresh
+    await refreshPortal();
+  })();
 
   // Diagnosis file display
   const diagFile = document.getElementById('diagFile');
@@ -66,6 +268,13 @@
       const fd = new FormData(diagForm);
       diagOut.textContent = 'Analyzing...';
       try {
+        // If AI disabled, show maintenance modal
+        const cfg = await fetch('/api/config/env').then(r=>r.json()).catch(()=>({features:{aiEnabled:false}}));
+        if (!cfg.features?.aiEnabled) {
+          openFeatureModal();
+          diagOut.textContent = 'AI temporarily unavailable.';
+          return;
+        }
         const res = await fetch('/api/diagnose', { method: 'POST', body: fd });
         const data = await res.json();
         diagOut.textContent = JSON.stringify(data, null, 2);
@@ -88,6 +297,15 @@
     chatLog.appendChild(bubble);
     chatInput.value = '';
     try {
+      const cfg = await fetch('/api/config/env').then(r=>r.json()).catch(()=>({features:{aiEnabled:false}}));
+      if (!cfg.features?.aiEnabled) {
+        openFeatureModal();
+        const reply = document.createElement('div');
+        reply.className = 'p-2 rounded-lg bg-white border';
+        reply.textContent = 'AI chat temporarily unavailable.';
+        chatLog.appendChild(reply);
+        return;
+      }
       const res = await fetch('/api/ai/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question: q }) });
       const data = await res.json();
       const reply = document.createElement('div');
@@ -104,12 +322,24 @@
   if (chatSend) chatSend.addEventListener('click', sendChat);
   if (chatInput) chatInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendChat(); });
 
+  // Feature modal helper
+  function openFeatureModal(){
+    const modal = document.getElementById('featureModal');
+    const close = document.getElementById('featureModalClose');
+    if (!modal) return;
+    modal.classList.remove('hidden');
+    close && close.addEventListener('click', ()=> modal.classList.add('hidden'));
+    modal.addEventListener('click', (e)=>{ if(e.target === modal) modal.classList.add('hidden'); });
+  }
+
   // Purchase buttons
   document.querySelectorAll('[data-plan]').forEach(btn => {
     btn.addEventListener('click', async () => {
       const plan = btn.getAttribute('data-plan');
       btn.setAttribute('disabled', 'true');
       try {
+        const cfg = await fetch('/api/config/env').then(r=>r.json()).catch(()=>({features:{stripeEnabled:false}}));
+        if (!cfg.features?.stripeEnabled) { openFeatureModal(); return; }
         const res = await fetch('/api/stripe/create-checkout-session', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
