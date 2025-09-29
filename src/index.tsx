@@ -46,10 +46,12 @@ app.get('/', (c) => {
               <a href="#portal" className="hover:text-white transition">הפורטל שלי</a>
               <a href="#contact" className="hover:text-white transition">צור קשר</a>
             </nav>
-            <a href="#auth" id="openAuthModal" className="btn btn-cta-header">
-              <i className="fas fa-user-lock"></i>
-              התחברות / הרשמה
-            </a>
+            <div id="headerAuthZone">
+              <a href="#auth" id="openAuthModal" className="btn btn-cta-header">
+                <i className="fas fa-user-lock"></i>
+                התחברות / הרשמה
+              </a>
+            </div>
           </div>
         </div>
       </header>
@@ -209,21 +211,7 @@ app.get('/', (c) => {
               <p className="text-xs text-slate-500 mt-2">Tip: add OPENAI_API_KEY to enable real AI responses. Irrelevant questions will be filtered.</p>
             </div>
 
-            {/* Auth */}
-            <div id="panel-auth" className="card hidden">
-              <div className="heading mb-2">התחברות / הרשמה</div>
-              <div className="grid gap-3">
-                <input id="authEmail" type="email" placeholder="דוא&quot;ל" className="border rounded-lg px-3 py-2" />
-                <input id="authPassword" type="password" placeholder="סיסמה" className="border rounded-lg px-3 py-2" />
-                <div className="flex gap-2">
-                  <button id="btnLogin" className="btn btn-primary">התחבר</button>
-                  <button id="btnRegister" className="btn">הירשם</button>
-                  <button id="btnReset" className="btn">איפוס סיסמה</button>
-                  <button id="btnLogout" className="btn hidden">התנתק</button>
-                </div>
-                <div id="authStatus" className="text-sm text-slate-600"></div>
-              </div>
-            </div>
+
 
             {/* Portal (read-only) */}
             <div id="panel-portal" className="card hidden">

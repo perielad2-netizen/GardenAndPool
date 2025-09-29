@@ -26,7 +26,6 @@
     'garden': document.getElementById('panel-garden'),
     'garden-subscription': document.getElementById('panel-garden-subscription'),
     'chat': document.getElementById('panel-chat'),
-    'auth': document.getElementById('panel-auth'),
     'portal': document.getElementById('panel-portal')
   };
   function setActive(id, opts){
@@ -96,16 +95,7 @@
     const client = await supa();
     if (!client) return;
 
-    // Panel controls (kept as fallback)
-    const authEmail = document.getElementById('authEmail');
-    const authPassword = document.getElementById('authPassword');
-    const btnLogin = document.getElementById('btnLogin');
-    const btnRegister = document.getElementById('btnRegister');
-    const btnReset = document.getElementById('btnReset');
-    const btnLogout = document.getElementById('btnLogout');
-    const authStatus = document.getElementById('authStatus');
-
-    // Modal controls (new primary)
+    // Modal controls (primary)
     const authEmailModal = document.getElementById('authEmailModal');
     const authPasswordModal = document.getElementById('authPasswordModal');
     const btnLoginModal = document.getElementById('btnLoginModal');
@@ -122,6 +112,9 @@
     const portalInvoices = document.getElementById('portalInvoices');
     const portalSummary = document.getElementById('portalSummary');
 
+    // Header auth zone (swap CTA to logged-in state)
+    const headerAuthZone = document.getElementById('headerAuthZone');
+
     async function refreshPortal() {
       const { data: { user } } = await client.auth.getUser();
       const modal = document.getElementById('authModal');
@@ -129,17 +122,34 @@
         portalSignedOut?.classList.remove('hidden');
         portalContent?.classList.add('hidden');
         portalSummary && (portalSummary.textContent = 'טרם מחובר/ת');
-        btnLogout?.classList.add('hidden');
         btnLogoutModal?.classList.add('hidden');
+        if (headerAuthZone) headerAuthZone.innerHTML = `
+          <a href="#auth" id="openAuthModal" class="btn btn-cta-header">
+            <i class="fas fa-user-lock"></i>
+            התחברות / הרשמה
+          </a>`;
+        const newOpen = document.getElementById('openAuthModal');
+        newOpen && newOpen.addEventListener('click', (e)=>{ e.preventDefault(); openAuthModal(); });
         return;
       }
-      btnLogout?.classList.remove('hidden');
       btnLogoutModal?.classList.remove('hidden');
       portalSignedOut?.classList.add('hidden');
       portalContent?.classList.remove('hidden');
       portalSummary && (portalSummary.textContent = `מחובר/ת כ-${user.email}`);
       // Close modal after successful login
       modal && modal.classList.add('hidden');
+      // Swap header CTA to logged-in dropdown/actions
+      if (headerAuthZone) headerAuthZone.innerHTML = `
+        <div class="flex items-center gap-2">
+          <span class="text-white/90 text-sm hidden sm:inline">${user.email}</span>
+          <button id="headerLogout" class="btn btn-cta-header"><i class="fas fa-right-from-bracket"></i> התנתק</button>
+        </div>`;
+      const headerLogout = document.getElementById('headerLogout');
+      headerLogout && headerLogout.addEventListener('click', async ()=>{
+        await client.auth.signOut();
+        authStatusModal && (authStatusModal.textContent = 'התנתקת');
+        await refreshPortal();
+      });
 
       // Basic read-only pulls
       const uid = user.id;
@@ -208,7 +218,6 @@
 
       const appts = await client.rpc('get_upcoming_appointments_for_user', { p_user: uid }).catch(() => ({ data: null }));
       if (!appts || !appts.data) {
-        // fallback simple select
         const a = await client.from('appointments').select('*').order('scheduled_date',{ascending:true}).limit(5);
         if (portalAppts) {
           if (!a.data || a.data.length===0) portalAppts.textContent = 'אין תורים';
@@ -248,30 +257,6 @@
         `).join('');
       }
     }
-
-    // Fallback panel listeners
-    btnLogin?.addEventListener('click', async () => {
-      authStatus.textContent = 'מתחבר...';
-      const { error } = await client.auth.signInWithPassword({ email: authEmail.value, password: authPassword.value });
-      authStatus.textContent = error ? ('שגיאה: ' + error.message) : 'מחובר';
-      await refreshPortal();
-    });
-    btnRegister?.addEventListener('click', async () => {
-      authStatus.textContent = 'נרשם...';
-      const { error } = await client.auth.signUp({ email: authEmail.value, password: authPassword.value });
-      authStatus.textContent = error ? ('שגיאה: ' + error.message) : 'נרשם! בדוק/י דוא"ל לאימות';
-      await refreshPortal();
-    });
-    btnReset?.addEventListener('click', async () => {
-      authStatus.textContent = 'שולח קישור לאיפוס...';
-      const { error } = await client.auth.resetPasswordForEmail(authEmail.value, { redirectTo: window.location.origin });
-      authStatus.textContent = error ? ('שגיאה: ' + error.message) : 'קישור איפוס נשלח לדוא"ל';
-    });
-    btnLogout?.addEventListener('click', async () => {
-      await client.auth.signOut();
-      authStatus.textContent = 'התנתקת';
-      await refreshPortal();
-    });
 
     // Modal listeners (primary)
     btnLoginModal?.addEventListener('click', async () => {
