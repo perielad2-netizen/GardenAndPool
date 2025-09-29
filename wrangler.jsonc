@@ -8,9 +8,7 @@
   ],
   "vars": {
     // Publicly safe values only; secrets via `pages secret put`
-    "PUBLIC_BASE_URL": "",
-    "PUBLIC_SUPABASE_URL": "",
-    "PUBLIC_SUPABASE_ANON_KEY": ""
+    "PUBLIC_BASE_URL": ""
   },
   // "kv_namespaces": [
   //   {

@@ -76,6 +76,35 @@
     } catch { return null; }
   }
 
+  // Format window label HH:MM–HH:MM in he-IL
+  function formatWindow(startIso, endIso){
+    const s = new Date(startIso);
+    const e = new Date(endIso);
+    const opts = { hour: '2-digit', minute: '2-digit' };
+    return `${s.toLocaleTimeString('he-IL', opts)}–${e.toLocaleTimeString('he-IL', opts)}`;
+  }
+
+  // Attach cancel handlers to buttons rendered in the portal
+  function attachCancelHandlers(client, refreshPortal){
+    document.querySelectorAll('[data-cancel]').forEach((btn) => {
+      if (btn.dataset.bound === '1') return;
+      btn.dataset.bound = '1';
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-cancel');
+        if (!id) return;
+        btn.setAttribute('disabled','true');
+        try {
+          const { error } = await client.from('appointments').update({ status: 'cancelled' }).eq('id', id);
+          if (error) alert('שגיאה: ' + error.message);
+        } catch (_) {
+          // ignore
+        } finally {
+          await refreshPortal();
+        }
+      });
+    });
+  }
+
   // Auth Modal logic
   function openAuthModal(){
     const modal = document.getElementById('authModal');
@@ -117,7 +146,7 @@
 
     async function refreshPortal() {
       // Allow external triggers
-      window.addEventListener('portal-refresh', async ()=> { await refreshPortal(); });
+      if (!window.__portalRefreshBound) { window.addEventListener('portal-refresh', async ()=> { await refreshPortal(); }); window.__portalRefreshBound = true; }
       const { data: { user } } = await client.auth.getUser();
       const modal = document.getElementById('authModal');
       if (!user) {
@@ -223,28 +252,38 @@
         const a = await client.from('appointments').select('*').order('scheduled_date',{ascending:true}).limit(5);
         if (portalAppts) {
           if (!a.data || a.data.length===0) portalAppts.textContent = 'אין תורים';
-          else portalAppts.innerHTML = a.data.map(x => `
+          else portalAppts.innerHTML = a.data.map(x => {
+            const start = x.window_start || x.scheduled_date;
+            const end = x.window_end || new Date(new Date(x.scheduled_date).getTime() + 2*60*60*1000).toISOString();
+            return `
             <div class="flex items-center justify-between border rounded-lg p-2 mb-2">
               <div>
                 <div class="font-medium">${x.service_type}</div>
-                <div class="text-xs text-slate-500">${new Date(x.scheduled_date).toLocaleString('he-IL')}</div>
+                <div class="text-xs text-slate-500">${formatWindow(start, end)}</div>
               </div>
-              <div class="text-xs text-slate-500">${x.status}</div>
-            </div>
-          `).join('');
+              <div class="flex items-center gap-2">
+                <div class="text-xs text-slate-500">${x.status}</div>
+                ${x.status === 'pending' ? `<button class="text-xs text-red-600 underline" data-cancel="${x.id}">בטל</button>` : ''}
+              </div>
+            </div>`;
+          }).join('');
         }
       } else {
         if (portalAppts) portalAppts.innerHTML = appts.data.map(x => `
           <div class="flex items-center justify-between border rounded-lg p-2 mb-2">
             <div>
               <div class="font-medium">${x.service_type}</div>
-              <div class="text-xs text-slate-500">${new Date(x.scheduled_date).toLocaleString('he-IL')}</div>
+              <div class="text-xs text-slate-500">${formatWindow(x.scheduled_date, x.window_end)}</div>
             </div>
-            <div class="text-xs text-slate-500">${x.status}</div>
+            <div class="flex items-center gap-2">
+              <div class="text-xs text-slate-500">${x.status}</div>
+              ${x.status === 'pending' ? `<button class="text-xs text-red-600 underline" data-cancel="${x.id}">בטל</button>` : ''}
+            </div>
           </div>
         `).join('');
       }
 
+      attachCancelHandlers(client, refreshPortal);
       const inv = await client.from('invoices').select('*').eq('user_id', uid).order('due_date', { ascending: false }).limit(5);
       if (portalInvoices) {
         if (!inv.data || inv.data.length===0) portalInvoices.textContent = 'אין חשבוניות';
