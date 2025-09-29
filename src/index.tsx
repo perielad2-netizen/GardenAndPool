@@ -339,7 +339,7 @@ app.get('/', (c) => {
           <div className="rounded-2xl bg-white shadow-xl p-5">
             <div className="font-bold mb-2">התחברות / הרשמה</div>
             <div className="grid gap-3">
-              <input id="authEmailModal" type="email" placeholder="דוא\"ל" className="border rounded-lg px-3 py-2" />
+              <input id="authEmailModal" type="email" placeholder="דוא&quot;ל" className="border rounded-lg px-3 py-2" />
               <input id="authPasswordModal" type="password" placeholder="סיסמה" className="border rounded-lg px-3 py-2" />
               <div className="flex gap-2">
                 <button id="btnLoginModal" className="btn btn-primary">התחבר</button>
