@@ -33,6 +33,8 @@ export const renderer = jsxRenderer(({ children }) => {
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.2/css/all.min.css" rel="stylesheet" />
         {/* App styles */}
         <link href="/static/styles.css" rel="stylesheet" />
+        {/* Supabase UMD for window.supabase (required by app.js) */}
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.1/dist/umd/supabase.min.js"></script>
       </head>
       <body className="font-heebo bg-gradient-to-b from-blue-500 via-sky-400 to-cyan-300 min-h-screen text-slate-900 selection:bg-cyan-200/70">
         {children}
