@@ -46,20 +46,22 @@ html[dir="rtl"] body { direction: rtl; }
   border-radius: 0.5rem;
   transition: all .2s ease;
 }
-.btn-primary {
-  background: #2563eb;
-  color: #fff;
-}
+.btn-primary { background: #2563eb; color: #fff; }
 .btn-primary:hover { background: #1d4ed8; }
-.btn-accent {
-  background: #10b981;
-  color: #fff;
-}
+.btn-accent { background: #10b981; color: #fff; }
 .btn-accent:hover { background: #059669; }
+/* Header CTA pill */
+.btn-cta-header { background: rgba(255,255,255,0.18); color:#fff; border:1px solid rgba(255,255,255,0.45); border-radius:9999px; padding: .5rem .9rem; }
+.btn-cta-header:hover { background: rgba(255,255,255,0.28); }
+/* Primary/secondary CTA used in hero */
+.btn-cta-primary { background:#2563eb; color:#fff; border-radius:.75rem; }
+.btn-cta-primary:hover { background:#1d4ed8; }
+.btn-cta-secondary { background:#ffffff; color:#075985; border:1px solid #e5e7eb; border-radius:.75rem; }
+.btn-cta-secondary:hover { background:#f8fafc; }
 
 /* Cards */
 .card {
-  background: #ffffffee;
+  background: #ffffff; /* solid for clarity over gradients */
   border-radius: 1rem;
   padding: 1.25rem;
   border: 1px solid #e5e7eb;
@@ -84,6 +86,21 @@ html[dir="rtl"] body { direction: rtl; }
     0 10px 24px rgba(2,132,199,0.12),
     0 28px 64px -24px rgba(2,132,199,0.30);
 }
+
+/* Service chips */
+.chip {
+  display:flex; align-items:center; justify-content:space-between;
+  background:#ffffff; border:1px solid #e5e7eb; border-radius:.75rem;
+  padding:.6rem .8rem; box-shadow: 0 1px 2px rgba(0,0,0,.04);
+}
+.chip:hover { box-shadow: 0 6px 18px rgba(2,132,199,.10); transform: translateY(-1px); }
+.icon-bubble { width:2rem; height:2rem; display:grid; place-items:center; border-radius:.6rem; background:#eff6ff; color:#1d4ed8; }
+
+/* Pill counters */
+.pill { background: rgba(255,255,255,0.9); color:#111827; border-radius:1rem; padding:.8rem; box-shadow: 0 1px 2px rgba(0,0,0,.06); }
+
+/* Outline style used in diagnosis upload label */
+.water-outline { background:#ffffff; border:1px dashed #93c5fd; color:#1d4ed8; }
 
 /* Typography */
 .heading { font-size: 1.25rem; font-weight: 700; }
