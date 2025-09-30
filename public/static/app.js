@@ -249,7 +249,11 @@
 
       const appts = await client.rpc('get_upcoming_appointments_for_user', { p_user: uid }).catch(() => ({ data: null }));
       if (!appts || !appts.data) {
-        const a = await client.from('appointments').select('*').order('scheduled_date',{ascending:true}).limit(5);
+        const a = await client.from('appointments')
+          .select('*')
+          .eq('user_id', uid)
+          .order('scheduled_date', { ascending: true })
+          .limit(5);
         if (portalAppts) {
           if (!a.data || a.data.length===0) portalAppts.textContent = 'אין תורים';
           else portalAppts.innerHTML = a.data.map(x => {
@@ -399,6 +403,7 @@
           .select('id')
           .eq('window_start', startIso)
           .eq('window_end', endIso)
+          .in('status', ['pending','confirmed'])
           .limit(1);
         if (existing.data && existing.data.length > 0) { status && (status.textContent = 'החלון תפוס, בחר/י חלון אחר'); return; }
 
