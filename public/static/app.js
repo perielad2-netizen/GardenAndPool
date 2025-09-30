@@ -396,6 +396,7 @@
           service_type: service,
           window_start: startIso,
           window_end: endIso,
+          status: 'pending',
           notes
         };
         // Check availability before insert (server-side constraint will enforce too)
@@ -407,7 +408,7 @@
           .limit(1);
         if (existing.data && existing.data.length > 0) { status && (status.textContent = 'החלון תפוס, בחר/י חלון אחר'); return; }
 
-        const { error } = await client.from('appointments').insert(payload);
+        const { error } = await client.from('appointments').insert(payload).select('id');
         status && (status.textContent = error ? ('שגיאה: ' + error.message) : 'נשמר!');
         if (!error) {
           // refresh portal appointments if visible
