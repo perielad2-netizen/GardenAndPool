@@ -88,6 +88,7 @@
   function attachCancelHandlers(client, refreshPortal){
     document.querySelectorAll('[data-cancel]').forEach((btn) => {
       if (btn.dataset.bound === '1') return;
+      if (btn.hasAttribute('disabled')) return; // skip disabled (same-day)
       btn.dataset.bound = '1';
       btn.addEventListener('click', async () => {
         const id = btn.getAttribute('data-cancel');
@@ -103,6 +104,15 @@
         }
       });
     });
+  }
+
+  // Israel-time same-day helper: returns true if ISO falls on today in Asia/Jerusalem
+  function isSameDayIL(iso){
+    if (!iso) return false;
+    const tz = 'Asia/Jerusalem';
+    const todayIL = new Date().toLocaleDateString('he-IL', { timeZone: tz });
+    const dayIL   = new Date(iso).toLocaleDateString('he-IL', { timeZone: tz });
+    return todayIL === dayIL;
   }
 
   // Auth Modal logic
@@ -259,6 +269,12 @@
           else portalAppts.innerHTML = a.data.map(x => {
             const start = x.window_start || x.scheduled_date;
             const end = x.window_end || new Date(new Date(x.scheduled_date).getTime() + 2*60*60*1000).toISOString();
+            const sameDay = isSameDayIL(start);
+            const cancelBtn = x.status === 'pending'
+              ? (sameDay
+                  ? `<button class="text-xs text-slate-400 cursor-not-allowed" title="לא ניתן לבטל ביום התור" disabled>בטל</button>`
+                  : `<button class="text-xs text-red-600 underline" data-cancel="${x.id}" title="בטל תור">בטל</button>`)
+              : '';
             return `
             <div class="flex items-center justify-between border rounded-lg p-2 mb-2">
               <div>
@@ -267,13 +283,20 @@
               </div>
               <div class="flex items-center gap-2">
                 <div class="text-xs text-slate-500">${x.status}</div>
-                ${x.status === 'pending' ? `<button class="text-xs text-red-600 underline" data-cancel="${x.id}">בטל</button>` : ''}
+                ${cancelBtn}
               </div>
             </div>`;
           }).join('');
         }
       } else {
-        if (portalAppts) portalAppts.innerHTML = appts.data.map(x => `
+        if (portalAppts) portalAppts.innerHTML = appts.data.map(x => {
+          const sameDay = isSameDayIL(x.scheduled_date);
+          const cancelBtn = x.status === 'pending'
+            ? (sameDay
+                ? `<button class="text-xs text-slate-400 cursor-not-allowed" title="לא ניתן לבטל ביום התור" disabled>בטל</button>`
+                : `<button class="text-xs text-red-600 underline" data-cancel="${x.id}" title="בטל תור">בטל</button>`)
+            : '';
+          return `
           <div class="flex items-center justify-between border rounded-lg p-2 mb-2">
             <div>
               <div class="font-medium">${x.service_type}</div>
@@ -281,10 +304,10 @@
             </div>
             <div class="flex items-center gap-2">
               <div class="text-xs text-slate-500">${x.status}</div>
-              ${x.status === 'pending' ? `<button class="text-xs text-red-600 underline" data-cancel="${x.id}">בטל</button>` : ''}
+              ${cancelBtn}
             </div>
-          </div>
-        `).join('');
+          </div>`;
+        }).join('');
       }
 
       attachCancelHandlers(client, refreshPortal);
