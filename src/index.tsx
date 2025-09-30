@@ -76,15 +76,15 @@ app.get('/', (c) => {
           </div>
 
           <div className="mt-8 grid grid-cols-3 gap-3 text-center">
-            <div className="pill text-white">
+            <div className="pill text-slate-800">
               <div className="text-2xl font-bold" data-counter data-target="10">0</div>
               <div className="text-sm">שנות ניסיון</div>
             </div>
-            <div className="pill text-white">
+            <div className="pill text-slate-800">
               <div className="text-2xl font-bold" data-counter data-target="500">0</div>
               <div className="text-sm">לקוחות מרוצים</div>
             </div>
-            <div className="pill text-white">
+            <div className="pill text-slate-800">
               <div className="text-2xl font-bold">24/7</div>
               <div className="text-sm">זמינות מיידית</div>
             </div>
