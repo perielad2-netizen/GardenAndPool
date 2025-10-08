@@ -683,7 +683,7 @@
             <button class="btn" data-dec="${it.key}">-</button>
             <span class="text-sm w-10 text-center" data-qty="${it.key}">${it.qty}</span>
             <button class="btn" data-inc="${it.key}">+</button>
-            <button class="btn btn-accent ml-auto" data-order="${it.key}">הזן הזמנה</button>
+            ${ (it.qty||0) < (it.threshold||0) ? `<button class="btn btn-accent ml-auto" data-order="${it.key}">הזן הזמנה</button>` : `` }
           </div>
         </div>
       `).join('');
