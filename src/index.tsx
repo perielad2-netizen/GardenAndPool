@@ -522,6 +522,7 @@ app.get('/api/health', (c) => c.json({ ok: true }))
 app.get('/api/config/env', (c) => {
   return c.json({
     name: 'מים וטבע',
+    baseUrl: c.env.PUBLIC_BASE_URL || (new URL(c.req.url)).origin,
     plans: ['basic', 'monthly', 'yearly', 'vip', 'premium'],
     supabase: {
       url: c.env.PUBLIC_SUPABASE_URL || '',
@@ -539,6 +540,7 @@ app.get('/api/config/env', (c) => {
 app.get('/api/config/public', (c) => {
   return c.json({
     name: 'מים וטבע',
+    baseUrl: c.env.PUBLIC_BASE_URL || (new URL(c.req.url)).origin,
     plans: ['basic', 'monthly', 'yearly', 'vip', 'premium'],
     supabase: {
       url: c.env.PUBLIC_SUPABASE_URL || '',

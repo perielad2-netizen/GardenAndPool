@@ -184,7 +184,7 @@
         const profName = await client.from('profiles').select('full_name').eq('id', user.id).maybeSingle();
         profileName = profName?.data?.full_name || null;
       } catch {}
-      const displayName = profileName || (user?.user_metadata?.full_name || user?.user_metadata?.name) || (user.email || '').split('@')[0] || user.email;
+      const displayName = (profileName && String(profileName).trim()) || (user.email || '').split('@')[0] || user.email;
       if (headerAuthZone) headerAuthZone.innerHTML = `
         <div class="flex items-center gap-2">
           <span class="text-white/90 text-sm hidden sm:inline">${displayName}</span>
@@ -419,13 +419,23 @@
       if (pw.length < 6) { authStatusModal.textContent = 'הסיסמה קצרה מדי (מינ׳ 6 תווים)'; return; }
       if (pw !== pw2) { authStatusModal.textContent = 'האימות לא תואם את הסיסמה'; return; }
       authStatusModal.textContent = 'נרשם...';
-      const { error } = await client.auth.signUp({ email: authEmailModal.value, password: pw });
+      let emailRedirectTo = window.location.origin;
+      try {
+        const cfg = await fetch('/api/config/env').then(r=>r.json());
+        if (cfg?.baseUrl) emailRedirectTo = cfg.baseUrl;
+      } catch {}
+      const { error } = await client.auth.signUp({ email: authEmailModal.value, password: pw, options: { emailRedirectTo } });
       authStatusModal.textContent = error ? ('שגיאה: ' + error.message) : 'נרשם! בדוק/י דוא"ל לאימות';
       await refreshPortal();
     });
     btnResetModal?.addEventListener('click', async () => {
       authStatusModal.textContent = 'שולח קישור לאיפוס...';
-      const { error } = await client.auth.resetPasswordForEmail(authEmailModal.value, { redirectTo: window.location.origin });
+      let redirectTo = window.location.origin;
+      try {
+        const cfg = await fetch('/api/config/env').then(r=>r.json());
+        if (cfg?.baseUrl) redirectTo = cfg.baseUrl;
+      } catch {}
+      const { error } = await client.auth.resetPasswordForEmail(authEmailModal.value, { redirectTo });
       authStatusModal.textContent = error ? ('שגיאה: ' + error.message) : 'קישור איפוס נשלח לדוא"ל';
     });
     btnLogoutModal?.addEventListener('click', async () => {
