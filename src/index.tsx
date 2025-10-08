@@ -57,7 +57,7 @@ app.get('/', (c) => {
         </div>
       </header>
 
-      <section className="relative overflow-hidden snap-start">
+      <section className="relative overflow-hidden snap-start reveal">
         <div className="absolute inset-0 -z-10">
           <div className="absolute -top-32 -left-32 w-72 h-72 bg-white/20 rounded-full blur-3xl"></div>
           <div className="absolute top-1/2 right-0 w-96 h-96 bg-cyan-200/30 rounded-full blur-3xl"></div>
@@ -93,7 +93,7 @@ app.get('/', (c) => {
         </div>
       </section>
 
-      <section id="services" className="bg-white/60 backdrop-blur rounded-t-3xl -mt-2 snap-start">
+      <section id="services" className="bg-white/60 backdrop-blur rounded-t-3xl -mt-2 snap-start reveal">
         <div className="max-w-5xl mx-auto px-4 py-10">
           <h2 className="text-2xl font-bold mb-6">שירותים</h2>
 
@@ -119,10 +119,10 @@ app.get('/', (c) => {
             ))}
           </div>
 
-          {/* Panels: horizontal snap on mobile/tablet */}
-          <div id="panelsScroller" className="space-y-6 panels-horizontal">
+          {/* Panels */}
+          <div id="panelsScroller" className="space-y-6">
             {/* Diagnosis */}
-            <div id="panel-diagnosis" className="card panel-item">
+            <div id="panel-diagnosis" className="card">
               <div className="heading mb-2">אבחון מהיר באמצעות תמונה</div>
               <form id="diagnosisForm" className="space-y-3">
                 <input id="diagFile" type="file" name="image" accept="image/*" className="hidden" required />
@@ -143,7 +143,7 @@ app.get('/', (c) => {
             </div>
 
             {/* Scheduler */}
-            <div id="panel-scheduler" className="card hidden panel-item">
+            <div id="panel-scheduler" className="card hidden">
               <div className="heading mb-2">תיאום טכנאי</div>
               <form id="schedulerForm" className="grid gap-3">
                 <div className="grid sm:grid-cols-2 gap-3">
@@ -184,7 +184,7 @@ app.get('/', (c) => {
             </div>
 
             {/* Cabinet */}
-            <div id="panel-cabinet" className="card hidden panel-item">
+            <div id="panel-cabinet" className="card hidden">
               <div className="heading mb-2">ארון תחזוקה דיגיטלי</div>
               <p className="text-sm text-slate-600 mb-3">מעקב אחר חומרים, כלים וחלקי חילוף לתחזוקה שוטפת.</p>
               <div id="cabinetSignedOut" className="text-sm text-slate-600">יש להתחבר כדי לצפות ולהתעדכן.</div>
@@ -201,7 +201,7 @@ app.get('/', (c) => {
             </div>
 
             {/* Subscription (Pool) */}
-            <div id="panel-subscription" className="card hidden panel-item">
+            <div id="panel-subscription" className="card hidden">
               <div className="heading mb-2">מנויים</div>
               <div className="grid sm:grid-cols-2 lg:grid-cols-2 gap-4">
                 {/* מנוי VIP */}
@@ -313,7 +313,7 @@ app.get('/', (c) => {
 
 
             {/* Smart Chat */}
-            <div id="panel-chat" className="card hidden panel-item">
+            <div id="panel-chat" className="card hidden">
               <div className="heading mb-2">צ׳אט חכם</div>
               <div className="flex gap-2">
                 <input id="chatInput" className="flex-1 border rounded-lg px-3 py-2" placeholder="שאל שאלה על תחזוקת בריכה" />
@@ -326,7 +326,7 @@ app.get('/', (c) => {
 
 
             {/* Portal (read-only) */}
-            <div id="panel-portal" className="card hidden panel-item">
+            <div id="panel-portal" className="card hidden">
               <div className="heading mb-2">הפורטל שלי</div>
               <div id="portalSignedOut" className="text-sm text-slate-600">יש להתחבר כדי לצפות בפרטים האישיים.</div>
               <div id="portalContent" className="hidden space-y-3">
@@ -353,7 +353,7 @@ app.get('/', (c) => {
       </section>
 
 
-      <section id="plans" className="bg-white snap-start">
+      <section id="plans" className="bg-white snap-start reveal">
         <div className="max-w-5xl mx-auto px-4 py-10">
           <h2 className="text-2xl font-bold mb-6">מנויים</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-2 gap-4">
@@ -461,7 +461,7 @@ app.get('/', (c) => {
         </div>
       </section>
 
-      <footer id="contact" className="bg-slate-900 text-white snap-start">
+      <footer id="contact" className="bg-slate-900 text-white snap-start reveal">
         <div className="max-w-5xl mx-auto px-4 py-8 grid sm:grid-cols-3 gap-6">
           <div>
             <div className="font-bold mb-2">צור קשר</div>
