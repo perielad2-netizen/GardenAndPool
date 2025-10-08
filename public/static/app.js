@@ -30,6 +30,8 @@
     'chat': document.getElementById('panel-chat'),
     'portal': document.getElementById('panel-portal')
   };
+  const panelsScroller = document.getElementById('panelsScroller');
+  const isMobileTablet = () => window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
   function setActive(id, opts){
     const o = Object.assign({ scroll: true }, opts || {});
     Object.values(panels).forEach(el => el && el.classList.add('hidden'));
@@ -37,7 +39,16 @@
     if(panel){
       panel.classList.remove('hidden');
       if (o.scroll) {
-        try{ panel.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch(_){ }
+        try{
+          if (isMobileTablet() && panelsScroller && panelsScroller.classList.contains('panels-horizontal')) {
+            // Horizontal scroll to panel (mobile/tablet)
+            const x = panel.offsetLeft - (panelsScroller.offsetLeft || 0);
+            panelsScroller.scrollTo({ left: x, behavior: 'smooth' });
+          } else {
+            // Default vertical scroll
+            panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        } catch(_){ }
       }
     }
 
