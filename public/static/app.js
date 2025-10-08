@@ -243,26 +243,23 @@
       }
 
       const appts = await client.rpc('get_upcoming_appointments_for_user', { p_user: uid }).catch(() => ({ data: null }));
-      if (!appts || !appts.data) {
-        const a = await client.from('appointments').select('*').order('scheduled_date',{ascending:true}).limit(5);
-        if (portalAppts) {
-          if (!a.data || a.data.length===0) portalAppts.textContent = 'אין תורים';
-          else portalAppts.innerHTML = a.data.map(x => `
-            <div class="flex items-center justify-between border rounded-lg p-2 mb-2">
-              <div>
-                <div class="font-medium">${x.service_type}</div>
-                <div class="text-xs text-slate-500">${new Date(x.scheduled_date).toLocaleString('he-IL')}</div>
-              </div>
-              <div class="text-xs text-slate-500">${x.status}</div>
-            </div>
-          `).join('');
-        }
-      } else {
-        if (portalAppts) portalAppts.innerHTML = appts.data.map(x => `
+      let list = Array.isArray(appts?.data) && appts.data.length > 0 ? appts.data : null;
+      if (!list) {
+        const a = await client
+          .from('appointments')
+          .select('*')
+          .eq('user_id', uid)
+          .order('window_start', { ascending: true })
+          .limit(10);
+        list = a.data || [];
+      }
+      if (portalAppts) {
+        if (!list || list.length === 0) portalAppts.textContent = 'אין תורים';
+        else portalAppts.innerHTML = list.map(x => `
           <div class="flex items-center justify-between border rounded-lg p-2 mb-2">
             <div>
               <div class="font-medium">${x.service_type}</div>
-              <div class="text-xs text-slate-500">${new Date(x.scheduled_date).toLocaleString('he-IL')}</div>
+              <div class="text-xs text-slate-500">${new Date(x.window_start || x.scheduled_date).toLocaleString('he-IL')}</div>
             </div>
             <div class="text-xs text-slate-500">${x.status}</div>
           </div>
