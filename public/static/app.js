@@ -27,8 +27,6 @@
     'scheduler': document.getElementById('panel-scheduler'),
     'cabinet': document.getElementById('panel-cabinet'),
     'subscription': document.getElementById('panel-subscription'),
-    'garden': document.getElementById('panel-garden'),
-    'garden-subscription': document.getElementById('panel-garden-subscription'),
     'chat': document.getElementById('panel-chat'),
     'portal': document.getElementById('panel-portal')
   };
@@ -596,28 +594,8 @@
     modal.addEventListener('click', (e)=>{ if(e.target === modal) modal.classList.add('hidden'); });
   }
 
-  // Purchase buttons
-  document.querySelectorAll('[data-plan]').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const plan = btn.getAttribute('data-plan');
-      btn.setAttribute('disabled', 'true');
-      try {
-        const cfg = await fetch('/api/config/env').then(r=>r.json()).catch(()=>({features:{stripeEnabled:false}}));
-        if (!cfg.features?.stripeEnabled) { openFeatureModal(); return; }
-        const res = await fetch('/api/stripe/create-checkout-session', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ plan })
-        });
-        const data = await res.json();
-        if (data.url) window.location.href = data.url; else alert('יצירת הסשן נכשלה');
-      } catch (e) {
-        alert('Error creating checkout session');
-      } finally {
-        btn.removeAttribute('disabled');
-      }
-    });
-  });
+  // Purchase buttons - removed (no purchase buttons in current UI)
+  // If re-enabled in the future, restore Stripe handler here.
 
   // ==== Cabinet (Equipment & Maintenance) ====
   (async function initCabinet(){
