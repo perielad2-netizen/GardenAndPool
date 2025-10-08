@@ -605,7 +605,7 @@
           body: JSON.stringify({ plan })
         });
         const data = await res.json();
-        if (data.url) window.location.href = data.url; else alert('Failed to create session');
+        if (data.url) window.location.href = data.url; else alert('יצירת הסשן נכשלה');
       } catch (e) {
         alert('Error creating checkout session');
       } finally {
