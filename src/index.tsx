@@ -192,6 +192,7 @@ app.get('/', (c) => {
               <p className="text-sm text-slate-600 mb-3">מעקב אחר חומרים, כלים וחלקי חילוף לתחזוקה שוטפת.</p>
               <div id="cabinetSignedOut" className="text-sm text-slate-600">יש להתחבר כדי לצפות ולהתעדכן.</div>
               <div id="cabinetApp" className="hidden">
+                <div id="cabinetAlerts" className="mb-3"></div>
                 <div className="flex items-center gap-2 mb-3 text-sm">
                   <button data-cabinet-filter="all" className="btn">הכל</button>
                   <button data-cabinet-filter="chemicals" className="btn">כימיקלים</button>

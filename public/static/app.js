@@ -669,15 +669,48 @@
       return '<span class="text-emerald-700 text-xs">מלא</span>';
     }
 
+    function badgeFor(it){
+      return it.type==='chemicals' ? '<span class="badge badge-chem"><i class="fas fa-flask"></i> כימיקלים</span>' :
+             it.type==='tools' ? '<span class="badge badge-tool"><i class="fas fa-wrench"></i> כלים</span>' :
+             '<span class="badge badge-part"><i class="fas fa-cog"></i> חלקים</span>';
+    }
+
+    function pct(it){
+      const denom = Math.max(1, it.threshold||1);
+      return Math.min(100, Math.round((Math.max(0,it.qty||0) / denom) * 100));
+    }
+
+    function renderAlerts(items){
+      const alertsEl = document.getElementById('cabinetAlerts');
+      if (!alertsEl) return;
+      const missing = items.filter(i => (i.qty||0) <= 0);
+      const low = items.filter(i => (i.qty||0) > 0 && (i.qty||0) < (i.threshold||0));
+      if (missing.length===0 && low.length===0) { alertsEl.innerHTML = ''; return; }
+      alertsEl.innerHTML = `
+        <div class="alert">
+          <div class="alert-title">התראות מלאי</div>
+          ${missing.length>0 ? `<div class="alert-item">חסר: ${missing.map(m=>m.name).join(', ')}</div>` : ''}
+          ${low.length>0 ? `<div class="alert-item">נמוך: ${low.map(m=>m.name).join(', ')}</div>` : ''}
+        </div>`;
+    }
+
     function render(items){
+      renderAlerts(items);
       listEl.innerHTML = items.map(it => `
         <div class="rounded-xl border p-3 ${levelClass(it)}">
           <div class="flex items-center justify-between">
             <div>
               <div class="font-semibold">${it.name}</div>
-              <div class="text-xs text-slate-500">מלאי נוכחי: ${it.qty} ${it.unit} • מינימום: ${it.threshold} ${it.unit}</div>
+              <div class="text-xs text-slate-500 flex items-center gap-2">${badgeFor(it)}
+                <span>מלאי נוכחי: <b>${it.qty}</b> ${it.unit}</span>
+                <span>מינימום:</span>
+                <input class="border rounded px-2 py-1 text-xs w-16" type="number" min="0" value="${it.threshold}" data-thr="${it.key}" />
+              </div>
             </div>
             <div>${levelTag(it)}</div>
+          </div>
+          <div class="mt-2">
+            <div class="progress"><span style="width:${pct(it)}%;"></span></div>
           </div>
           <div class="mt-2 flex items-center gap-2">
             <button class="btn" data-dec="${it.key}">-</button>
@@ -688,17 +721,17 @@
         </div>
       `).join('');
 
-      // Wire inc/dec/order
+      // Wire inc/dec/order/threshold
       items.forEach(it => {
         const dec = listEl.querySelector(`[data-dec="${it.key}"]`);
         const inc = listEl.querySelector(`[data-inc="${it.key}"]`);
         const qEl = listEl.querySelector(`[data-qty="${it.key}"]`);
         const order = listEl.querySelector(`[data-order="${it.key}"]`);
+        const thr = listEl.querySelector(`[data-thr="${it.key}"]`);
         dec?.addEventListener('click', async ()=>{ it.qty = Math.max(0, (it.qty||0)-1); qEl.textContent = it.qty; await save(it); load(); });
         inc?.addEventListener('click', async ()=>{ it.qty = (it.qty||0)+1; qEl.textContent = it.qty; await save(it); load(); });
-        order?.addEventListener('click', ()=>{
-          alert('פתיחת הזמנה (דמו). בעתיד: חיבור ל-Stripe/ספקים.');
-        });
+        order?.addEventListener('click', ()=>{ alert('פתיחת הזמנה (דמו). בעתיד: חיבור ל-Stripe/ספקים.'); });
+        thr?.addEventListener('change', async ()=>{ const v = parseInt(thr.value||'0',10); it.threshold = isNaN(v)?0:Math.max(0,v); await save(it); load(); });
       });
     }
 

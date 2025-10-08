@@ -105,6 +105,21 @@ html[dir="rtl"] body { direction: rtl; }
 /* Typography */
 .heading { font-size: 1.25rem; font-weight: 700; }
 
+/* Badges */
+.badge { display:inline-flex; align-items:center; gap:.35rem; font-size:.75rem; padding:.2rem .5rem; border-radius:.5rem; border:1px solid transparent; }
+.badge-chem { background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe; }
+.badge-tool { background:#ecfeff; color:#0e7490; border-color:#a5f3fc; }
+.badge-part { background:#f0fdf4; color:#166534; border-color:#bbf7d0; }
+
+/* Progress bar */
+.progress { height:8px; background:#e5e7eb; border-radius:9999px; overflow:hidden; }
+.progress > span { display:block; height:100%; background:#60a5fa; }
+
+/* Alerts */
+.alert { border-radius:1rem; border:1px solid #fde68a; background:#fffbeb; padding:.75rem 1rem; }
+.alert-title { color:#92400e; font-weight:700; margin-bottom:.25rem; }
+.alert-item { color:#92400e; font-size:.875rem; }
+
 /* Utility fallbacks if Tailwind is not loaded for some reason */
 .no-tailwind .btn { padding: 0.5rem 1rem; border-radius: 0.5rem; }
 .no-tailwind .card { border-radius: 1rem; padding: 1.25rem; background: #fff; border: 1px solid #e5e7eb; }
