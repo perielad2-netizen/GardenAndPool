@@ -668,7 +668,6 @@
     try {
       const els = document.querySelectorAll('.reveal');
       if (!('IntersectionObserver' in window) || !els || els.length === 0) {
-        // If not supported, show immediately
         els.forEach(el => el.classList.add('in-view'));
         return;
       }
@@ -676,12 +675,30 @@
         entries.forEach(entry => {
           if (entry.isIntersecting) {
             entry.target.classList.add('in-view');
-            // Optional: unobserve after first reveal for performance
             io.unobserve(entry.target);
           }
         });
       }, { root: null, rootMargin: '0px 0px -10% 0px', threshold: 0.1 });
       els.forEach(el => io.observe(el));
+
+      // Handle direct hash navigation: ensure target’s ancestors are visible and scrolled
+      function revealHashTarget(){
+        const id = (location.hash || '').replace('#','');
+        if (!id) return;
+        // Unhide panels if the hash points to a panel section
+        const panel = document.getElementById('panel-' + id) || document.getElementById(id);
+        if (panel && panel.classList.contains('hidden')) {
+          try { panel.classList.remove('hidden'); } catch {}
+        }
+        // Trigger scroll to section when hash changes so IO can fire
+        const sec = document.getElementById(id) || panel;
+        if (sec && typeof sec.scrollIntoView === 'function') {
+          sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+      // On load (if there is a hash) and on hash changes
+      if (location.hash) revealHashTarget();
+      window.addEventListener('hashchange', revealHashTarget);
     } catch {}
   })();
 
