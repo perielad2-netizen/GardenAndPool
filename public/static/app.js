@@ -158,10 +158,16 @@
       portalSummary && (portalSummary.textContent = `מחובר/ת כ-${user.email}`);
       // Close modal after successful login
       modal && modal.classList.add('hidden');
-      // Swap header CTA to logged-in dropdown/actions
+      // Swap header CTA to logged-in dropdown/actions (prefer full name over email)
+      let profileName = null;
+      try {
+        const profName = await client.from('profiles').select('full_name').eq('id', user.id).maybeSingle();
+        profileName = profName?.data?.full_name || null;
+      } catch {}
+      const displayName = profileName || (user?.user_metadata?.full_name || user?.user_metadata?.name) || (user.email || '').split('@')[0] || user.email;
       if (headerAuthZone) headerAuthZone.innerHTML = `
         <div class="flex items-center gap-2">
-          <span class="text-white/90 text-sm hidden sm:inline">${user.email}</span>
+          <span class="text-white/90 text-sm hidden sm:inline">${displayName}</span>
           <button id="headerLogout" class="btn btn-cta-header"><i class="fas fa-right-from-bracket"></i> התנתק</button>
         </div>`;
       const headerLogout = document.getElementById('headerLogout');
