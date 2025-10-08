@@ -1,27 +1,31 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "garden-and-pool",
+  "name": "webapp",
   "compatibility_date": "2025-09-28",
   "pages_build_output_dir": "./dist",
   "compatibility_flags": [
     "nodejs_compat"
   ],
-  
-  "vars": {
-    "ENVIRONMENT": "development"
-  },
-
-  // For production deployment, these will be set via wrangler secrets:
-  // wrangler secret put SUPABASE_URL
-  // wrangler secret put SUPABASE_ANON_KEY
-  // wrangler secret put JWT_SECRET
-  
-  // D1 Database for future use
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "garden-pool-production",
-      "database_id": "your-database-id-here"
-    }
-  ]
+  // "kv_namespaces": [
+  //   {
+  //     "binding": "MY_KV_NAMESPACE",
+  //     "id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  //   }
+  // ],
+  // "r2_buckets": [
+  //   {
+  //     "binding": "MY_BUCKET",
+  //     "bucket_name": "my-bucket"
+  //   }
+  // ],
+  // "d1_databases": [
+  //   {
+  //     "binding": "MY_DB",
+  //     "database_name": "my-database",
+  //     "database_id": ""
+  //   }
+  // ],
+  // "ai": {
+  //   "binding": "AI"
+  // }
 }
