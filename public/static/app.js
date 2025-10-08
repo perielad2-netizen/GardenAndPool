@@ -3,6 +3,7 @@
   let supabaseDown = false;
   let allowMockAuth = false;
   const MOCK_TOKEN_KEY = 'mock_token';
+  let supaClient = null;
   // Smooth counters
   const counters = document.querySelectorAll('[data-counter]');
   const ease = (t) => 1 - Math.pow(1 - t, 3);
@@ -70,13 +71,15 @@
   // ---- Supabase Auth + Portal (read-only) ----
   async function supa() {
     try {
+      if (supaClient) return supaClient;
       const res = await fetch('/api/config/env');
       const cfg = await res.json();
       allowMockAuth = Boolean(cfg?.features?.mockAuthFallback);
       const url = cfg?.supabase?.url;
       const anon = cfg?.supabase?.anon;
       if (!url || !anon || !window.supabase) return null;
-      return window.supabase.createClient(url, anon);
+      supaClient = window.supabase.createClient(url, anon, { auth: { storageKey: 'watn-auth' } });
+      return supaClient;
     } catch { return null; }
   }
 
