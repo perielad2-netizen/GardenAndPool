@@ -107,7 +107,6 @@ app.get('/', (c) => {
               { id: 'garden', icon: 'fa-seedling', label: 'גינון' },
               { id: 'garden-subscription', icon: 'fa-leaf', label: 'מנויי גינון' },
               { id: 'chat', icon: 'fa-robot', label: 'צ׳אט חכם' },
-              { id: 'auth', icon: 'fa-user-lock', label: 'התחברות / הרשמה' },
             ].map((t) => (
               <button
                 key={t.id}

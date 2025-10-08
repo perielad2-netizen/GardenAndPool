@@ -94,9 +94,6 @@
   }
   const openAuthBtn = document.getElementById('openAuthModal');
   if (openAuthBtn) openAuthBtn.addEventListener('click', (e)=>{ e.preventDefault(); openAuthModal(); });
-  // Also open modal when selecting the auth service chip
-  const authChip = document.querySelector('#serviceChips button[data-tab="auth"]');
-  if (authChip) authChip.addEventListener('click', (e)=>{ e.preventDefault(); openAuthModal(); });
 
   (async () => {
     const client = await supa();
