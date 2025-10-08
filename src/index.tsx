@@ -467,7 +467,7 @@ app.get('/', (c) => {
       <nav id="bottomNav" className="sm:hidden fixed bottom-0 inset-x-0 z-40">
         <div className="max-w-5xl mx-auto px-4 pb-[calc(env(safe-area-inset-bottom)+8px)]">
           <div className="backdrop-blur bg-white/90 border border-white/80 rounded-2xl shadow-xl">
-            <div className="grid grid-cols-4 text-center py-2">
+            <div className="grid grid-cols-5 text-center py-2">
               <button data-tab="diagnosis" className="flex flex-col items-center gap-1 text-slate-700">
                 <span className="nav-icon w-10 h-10 grid place-items-center rounded-xl bg-blue-50 text-blue-600"><i className="fas fa-camera"></i></span>
                 <span className="text-[11px] leading-none">אבחון</span>
@@ -479,6 +479,10 @@ app.get('/', (c) => {
               <button data-tab="subscription" className="flex flex-col items-center gap-1 text-slate-700">
                 <span className="nav-icon w-10 h-10 grid place-items-center rounded-xl bg-blue-50 text-blue-600"><i className="fas fa-water-ladder"></i></span>
                 <span className="text-[11px] leading-none">מנויים</span>
+              </button>
+              <button data-tab="portal" className="flex flex-col items-center gap-1 text-slate-700">
+                <span className="nav-icon w-10 h-10 grid place-items-center rounded-xl bg-blue-50 text-blue-600"><i className="fas fa-id-badge"></i></span>
+                <span className="text-[11px] leading-none">הפורטל</span>
               </button>
               <a href="tel:0500000000" className="flex flex-col items-center gap-1 text-slate-700">
                 <span className="nav-icon w-10 h-10 grid place-items-center rounded-xl bg-blue-50 text-blue-600"><i className="fas fa-phone"></i></span>
