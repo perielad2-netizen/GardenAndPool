@@ -279,6 +279,47 @@
           </div>
         `).join('');
       }
+
+      // Same-day cancel prohibition (Israel time)
+      if (portalAppts) {
+        try {
+          const tz = 'Asia/Jerusalem';
+          const nowIL = new Date(new Date().toLocaleString('en-US', { timeZone: tz }));
+          // Add cancel buttons for pending appointments not on the same IL date
+          const a = await client.from('appointments').select('*').eq('user_id', uid).order('window_start',{ascending:true}).limit(10);
+          if (a && a.data && a.data.length > 0) {
+            portalAppts.innerHTML = a.data.map(x => {
+              const startIL = new Date(new Date(x.window_start).toLocaleString('en-US', { timeZone: tz }));
+              const isSameDay = startIL.getFullYear()===nowIL.getFullYear() && startIL.getMonth()===nowIL.getMonth() && startIL.getDate()===nowIL.getDate();
+              const canCancel = x.status !== 'cancelled' && !isSameDay;
+              return `
+                <div class="flex items-center justify-between border rounded-lg p-2 mb-2">
+                  <div>
+                    <div class="font-medium">${x.service_type}</div>
+                    <div class="text-xs text-slate-500">${startIL.toLocaleString('he-IL')}</div>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <div class="text-xs text-slate-500">${x.status}</div>
+                    ${canCancel ? `<button class="btn btn-accent" data-cancel="${x.id}">בטל</button>` : `<span class="text-xs text-slate-400">לא ניתן לבטל היום</span>`}
+                  </div>
+                </div>`;
+            }).join('');
+            // Wire cancel buttons
+            portalAppts.querySelectorAll('[data-cancel]').forEach(btn => {
+              btn.addEventListener('click', async () => {
+                const id = btn.getAttribute('data-cancel');
+                try {
+                  const { error } = await client.from('appointments').update({ status: 'cancelled' }).eq('id', id);
+                  if (!error) {
+                    const evt = new Event('portal-refresh');
+                    window.dispatchEvent(evt);
+                  }
+                } catch {}
+              });
+            });
+          }
+        } catch {}
+      }
     }
 
     // Modal listeners (primary)
@@ -446,6 +487,12 @@
           .eq('window_start', startIso)
           .maybeSingle();
         if (exist && exist.data) { status && (status.textContent = 'החלון כבר נתפס. בחר/י חלון אחר.'); await refreshWindowAvailability(); return; }
+
+        // Server-side conflict check (optional; no-op if server not configured)
+        try {
+          const chk = await fetch('/api/schedule/check', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ date, window: windowVal }) });
+          if (chk.status === 409) { status && (status.textContent = 'החלון כבר נתפס. בחר/י חלון אחר.'); await refreshWindowAvailability(); return; }
+        } catch {}
 
         const payload = {
           user_id: user.id,

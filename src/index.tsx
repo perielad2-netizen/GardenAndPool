@@ -12,6 +12,7 @@ type Bindings = {
   PUBLIC_BASE_URL?: string
   PUBLIC_SUPABASE_URL?: string
   PUBLIC_SUPABASE_ANON_KEY?: string
+  SUPABASE_SERVICE_KEY?: string
 }
 
 const app = new Hono<{ Bindings: Bindings }>()
@@ -559,6 +560,43 @@ app.post('/api/ai/chat', async (c) => {
   const data = await resp.json<any>()
   const answer = data.choices?.[0]?.message?.content || 'No answer'
   return c.json({ source: 'openai', answer })
+})
+
+// ------------------- API: Scheduling - conflict check (server-side, optional) -------------------
+app.post('/api/schedule/check', async (c) => {
+  try {
+    const { date, window } = await c.req.json<{ date: string; window: string }>().catch(() => ({ date: '', window: '' }))
+    if (!date || !window) return c.json({ error: 'missing date/window' }, 400)
+    const [start] = window.split('-')
+    // Build ISO from client-provided local date/time (final storage should be UTC)
+    const startIso = new Date(`${date}T${start}:00`).toISOString()
+
+    const url = c.env.PUBLIC_SUPABASE_URL
+    const key = c.env.SUPABASE_SERVICE_KEY
+    if (!url || !key) {
+      // No server credentials configured yet – allow client to proceed (frontend still runs its own check)
+      return c.json({ ok: true, source: 'noop' })
+    }
+
+    // Supabase REST check for an existing appointment on that exact window_start
+    const endpoint = `${url.replace(/\/?$/, '')}/rest/v1/appointments?select=id&window_start=eq.${encodeURIComponent(startIso)}`
+    const resp = await fetch(endpoint, {
+      headers: {
+        'apikey': key,
+        'Authorization': `Bearer ${key}`,
+        'Accept': 'application/json'
+      }
+    })
+    if (!resp.ok) {
+      const txt = await resp.text()
+      return c.json({ error: 'supabase_error', detail: txt }, 502)
+    }
+    const list = await resp.json<any[]>()
+    if (Array.isArray(list) && list.length > 0) return c.json({ ok: false, conflict: true }, 409)
+    return c.json({ ok: true, conflict: false })
+  } catch (e) {
+    return c.json({ error: 'server_error' }, 500)
+  }
 })
 
 // ------------------- API: Stripe Checkout (or mock) -------------------
