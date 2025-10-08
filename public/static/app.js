@@ -373,6 +373,51 @@
 
   // Scheduler submit
   const schedulerForm = document.getElementById('schedulerForm');
+  const dateInput = document.getElementById('sched_date');
+  const windowSelect = document.getElementById('sched_window');
+
+  // Disable booked windows when date changes
+  async function refreshWindowAvailability() {
+    if (!dateInput || !windowSelect) return;
+    const date = dateInput.value;
+    // Reset all options enabled by default
+    Array.from(windowSelect.options).forEach(opt => opt.disabled = false);
+    if (!date) return;
+    try {
+      const client = await supa();
+      if (!client) return;
+      // Fetch appointments for that date (assumes a 'window_start' column ISO date)
+      const startDay = new Date(`${date}T00:00:00`).toISOString();
+      const endDay = new Date(`${date}T23:59:59`).toISOString();
+      const { data, error } = await client
+        .from('appointments')
+        .select('window_start, window_end')
+        .gte('window_start', startDay)
+        .lte('window_start', endDay);
+      if (error || !data) return;
+      const taken = new Set(
+        data.map(r => {
+          try {
+            const s = new Date(r.window_start);
+            const hh = String(s.getHours()).padStart(2,'0');
+            const mm = String(s.getMinutes()).padStart(2,'0');
+            // assume fixed 2h window
+            const label = `${hh}:${mm}-${String((s.getHours()+2)).padStart(2,'0')}:${mm}`;
+            return label;
+          } catch { return ''; }
+        })
+      );
+      Array.from(windowSelect.options).forEach(opt => {
+        if (taken.has(opt.value)) opt.disabled = true;
+      });
+    } catch {}
+  }
+  if (dateInput) {
+    dateInput.addEventListener('change', refreshWindowAvailability);
+    // initial try
+    setTimeout(refreshWindowAvailability, 0);
+  }
+
   if (schedulerForm) {
     schedulerForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -387,13 +432,20 @@
 
         const service = document.getElementById('sched_service').value;
         const date = document.getElementById('sched_date').value;
-        const start = document.getElementById('sched_start').value;
-        const end = document.getElementById('sched_end').value;
+        const windowVal = document.getElementById('sched_window').value; // e.g. "08:00-10:00"
         const notes = document.getElementById('sched_notes').value.trim() || null;
-        if (!date || !start || !end) { status && (status.textContent = 'נא למלא תאריך ושעות'); return; }
+        if (!date || !windowVal) { status && (status.textContent = 'נא לבחור תאריך וחלון'); return; }
+        const [start, end] = windowVal.split('-');
         const startIso = new Date(`${date}T${start}:00`).toISOString();
         const endIso = new Date(`${date}T${end}:00`).toISOString();
-        if (endIso <= startIso) { status && (status.textContent = 'שעת סיום חייבת להיות אחרי ההתחלה'); return; }
+
+        // Server-side uniqueness (basic guard)
+        const exist = await client
+          .from('appointments')
+          .select('id')
+          .eq('window_start', startIso)
+          .maybeSingle();
+        if (exist && exist.data) { status && (status.textContent = 'החלון כבר נתפס. בחר/י חלון אחר.'); await refreshWindowAvailability(); return; }
 
         const payload = {
           user_id: user.id,
@@ -405,7 +457,7 @@
         const { error } = await client.from('appointments').insert(payload);
         status && (status.textContent = error ? ('שגיאה: ' + error.message) : 'נשמר!');
         if (!error) {
-          // refresh portal appointments if visible
+          await refreshWindowAvailability();
           const evt = new Event('portal-refresh');
           window.dispatchEvent(evt);
         }
