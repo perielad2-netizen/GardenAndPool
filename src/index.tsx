@@ -142,7 +142,7 @@ app.get('/', (c) => {
                 </button>
               </form>
               <pre id="diagnosisResult" className="mt-3 text-sm text-slate-700 whitespace-pre-wrap"></pre>
-              <p className="text-xs text-slate-500 mt-2">Tip: add OPENAI_API_KEY to enable real AI diagnostics. Fallback returns mock response.</p>
+              <p className="text-xs text-slate-500 mt-2">טיפ: הוסיפו OPENAI_API_KEY כדי להפעיל אבחון AI אמיתי. ללא מפתח יוצג מענה הדמיה.</p>
             </div>
 
             {/* Scheduler */}
@@ -190,9 +190,9 @@ app.get('/', (c) => {
             <div id="panel-cabinet" className="card hidden">
               <div className="heading mb-2">ציוד ותחזוקה</div>
               <ul className="list-disc pr-6 text-sm text-slate-700 space-y-1">
-                <li>Filter check</li>
-                <li>Pump inspection</li>
-                <li>Chemicals stock</li>
+                <li>בדיקת מסנן</li>
+                <li>בדיקת משאבה</li>
+                <li>מלאי חומרים</li>
               </ul>
             </div>
 
@@ -221,19 +221,19 @@ app.get('/', (c) => {
                   </div>
                 ))}
               </div>
-              <p className="text-xs text-slate-500 mt-2">Tip: add STRIPE_SECRET_KEY to enable live checkout. Fallback returns a mock URL.</p>
+              <p className="text-xs text-slate-500 mt-2">טיפ: הוסיפו STRIPE_SECRET_KEY כדי להפעיל תשלום אמיתי. ללא מפתח תוחזר כתובת דמה.</p>
             </div>
 
             {/* Garden */}
             <div id="panel-garden" className="card hidden">
               <div className="heading mb-2">שירותי גינון</div>
-              <p className="text-sm text-slate-600">Garden care requests will be sent to the service queue.</p>
+              <p className="text-sm text-slate-600">בקשות לטיפול גינון יישלחו לתור השירות.</p>
             </div>
 
             {/* Garden Subscription */}
             <div id="panel-garden-subscription" className="card hidden">
               <div className="heading mb-2">מנויי גינון</div>
-              <p className="text-sm text-slate-600">Garden subscription plans will be handled similarly to pool subscriptions.</p>
+              <p className="text-sm text-slate-600">מנויי הגינון ינוהלו בדומה למנויי הבריכה.</p>
             </div>
 
             {/* Smart Chat */}
@@ -244,7 +244,7 @@ app.get('/', (c) => {
                 <button id="chatSend" className="btn btn-accent">שלח</button>
               </div>
               <div id="chatLog" className="mt-3 text-sm text-slate-700 space-y-2"></div>
-              <p className="text-xs text-slate-500 mt-2">Tip: add OPENAI_API_KEY to enable real AI responses. Irrelevant questions will be filtered.</p>
+              <p className="text-xs text-slate-500 mt-2">טיפ: הוסיפו OPENAI_API_KEY כדי להפעיל תשובות AI אמיתיות. שאלות לא רלוונטיות יסוננו.</p>
             </div>
 
 
@@ -276,12 +276,6 @@ app.get('/', (c) => {
         </div>
       </section>
 
-      <section id="portal" className="bg-white">
-        <div className="max-w-5xl mx-auto px-4 py-10">
-          <h2 className="text-2xl font-bold mb-6">הפורטל שלי</h2>
-          
-        </div>
-      </section>
 
       <section id="plans" className="bg-white">
         <div className="max-w-5xl mx-auto px-4 py-10">
@@ -338,10 +332,10 @@ app.get('/', (c) => {
         <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm"></div>
         <div className="absolute inset-x-4 bottom-8 sm:inset-0 sm:m-auto sm:max-w-md">
           <div className="rounded-2xl bg-white shadow-xl p-5">
-            <div className="font-bold mb-2">Feature temporarily unavailable</div>
-            <p className="text-sm text-slate-600">AI diagnostics and smart chat are under maintenance for this environment. Please try again later.</p>
+            <div className="font-bold mb-2">היכולת אינה זמינה זמנית</div>
+            <p className="text-sm text-slate-600">אבחון ה-AI והצ׳אט החכם נמצאים בתחזוקה בסביבה זו. אנא נסו שוב מאוחר יותר.</p>
             <div className="mt-4 text-left">
-              <button id="featureModalClose" className="btn btn-primary">Close</button>
+              <button id="featureModalClose" className="btn btn-primary">סגור</button>
             </div>
           </div>
         </div>

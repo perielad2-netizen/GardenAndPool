@@ -268,15 +268,25 @@
       }
       if (portalAppts) {
         if (!list || list.length === 0) portalAppts.textContent = 'אין תורים';
-        else portalAppts.innerHTML = list.map(x => `
+        else portalAppts.innerHTML = list.map(x => {
+          const dt = new Date(x.window_start || x.scheduled_date);
+          const hh = String(dt.getHours()).padStart(2,'0');
+          const mm = String(dt.getMinutes()).padStart(2,'0');
+          const end = new Date(dt.getTime() + 2*60*60*1000);
+          const eh = String(end.getHours()).padStart(2,'0');
+          const em = String(end.getMinutes()).padStart(2,'0');
+          const windowLabel = `${hh}:${mm}–${eh}:${em}`;
+          const serviceLabel = x.service_type === 'maintenance' ? 'תחזוקה' : x.service_type === 'cleaning' ? 'ניקיון' : x.service_type === 'repair' ? 'תיקון' : x.service_type === 'garden' ? 'גינון' : (x.service_type || 'שירות');
+          const statusLabel = x.status === 'scheduled' ? 'מתוזמן' : x.status === 'pending' ? 'בהמתנה' : x.status === 'confirmed' ? 'מאושר' : x.status === 'cancelled' ? 'בוטל' : (x.status || '');
+          return `
           <div class="flex items-center justify-between border rounded-lg p-2 mb-2">
             <div>
-              <div class="font-medium">${x.service_type}</div>
-              <div class="text-xs text-slate-500">${new Date(x.window_start || x.scheduled_date).toLocaleString('he-IL')}</div>
+              <div class="font-medium">${serviceLabel}</div>
+              <div class="text-xs text-slate-500">${windowLabel}, ${dt.toLocaleDateString('he-IL')}</div>
             </div>
-            <div class="text-xs text-slate-500">${x.status}</div>
-          </div>
-        `).join('');
+            <div class="text-xs text-slate-500">${statusLabel}</div>
+          </div>`;
+        }).join('');
       }
 
       const inv = await client.from('invoices').select('*').eq('user_id', uid).order('due_date', { ascending: false }).limit(5);
@@ -542,7 +552,7 @@
     if (!q) return;
     const bubble = document.createElement('div');
     bubble.className = 'p-2 rounded-lg bg-slate-100';
-    bubble.textContent = 'You: ' + q;
+    bubble.textContent = 'את/ה: ' + q;
     chatLog.appendChild(bubble);
     chatInput.value = '';
     try {
