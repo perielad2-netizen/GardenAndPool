@@ -31,7 +31,6 @@
     'portal': document.getElementById('panel-portal')
   };
   const panelsScroller = document.getElementById('panelsScroller');
-  const isMobileTablet = () => window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
   function setActive(id, opts){
     const o = Object.assign({ scroll: true }, opts || {});
     Object.values(panels).forEach(el => el && el.classList.add('hidden'));
@@ -40,14 +39,8 @@
       panel.classList.remove('hidden');
       if (o.scroll) {
         try{
-          if (isMobileTablet() && panelsScroller && panelsScroller.classList.contains('panels-horizontal')) {
-            // Horizontal scroll to panel (mobile/tablet)
-            const x = panel.offsetLeft - (panelsScroller.offsetLeft || 0);
-            panelsScroller.scrollTo({ left: x, behavior: 'smooth' });
-          } else {
-            // Default vertical scroll
-            panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }
+          // Always vertical smooth scroll to the active panel
+          panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
         } catch(_){ }
       }
     }
@@ -62,7 +55,11 @@
     const icon = document.querySelector(`#bottomNav [data-tab="${id}"] .nav-icon`);
     if (icon) icon.classList.add('active');
   }
-  buttons.forEach(btn => btn.addEventListener('click', (e) => { e.preventDefault(); const id = btn.getAttribute('data-tab'); if (id) { setActive(id, { scroll: true }); location.hash = id; } }));
+  buttons.forEach(btn => btn.addEventListener('click', (e) => { e.preventDefault(); const id = btn.getAttribute('data-tab'); if (id) {
+    setActive(id, { scroll: true }); location.hash = id;
+    // Ensure we are within services section when switching panel
+    try { document.getElementById('services').scrollIntoView({ behavior:'smooth', block:'start' }); } catch(_){ }
+  } }));
 
   // Default panel from URL (#panel or ?panel=) with fallback to diagnosis
   const hashPanel = (location.hash || '').replace('#','');
