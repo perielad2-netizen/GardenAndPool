@@ -1,0 +1,125 @@
+/* Base water theme, Hebrew RTL ready */
+html[dir="rtl"] body { direction: rtl; }
+
+/***** Glassmorphism helpers *****/
+.glass {
+  background: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.12);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 16px;
+}
+
+/* Emphasis chips active state */
+#serviceChips button.active {
+  outline: 2px solid #1e40af22;
+  box-shadow: 0 6px 18px rgba(2, 132, 199, 0.15);
+}
+
+/* Bottom nav active styling */
+#bottomNav .nav-icon.active {
+  background: #1e40af;
+  color: #fff;
+}
+
+/* Subtle wave gradient animation */
+.water-gradient {
+  background: linear-gradient(180deg, #3B82F6 0%, #06B6D4 50%, #3B82F6 100%);
+  background-size: 100% 200%;
+  animation: waveShift 12s ease-in-out infinite;
+}
+
+@keyframes waveShift {
+  0% { background-position: 50% 0%; }
+  50% { background-position: 50% 100%; }
+  100% { background-position: 50% 0%; }
+}
+
+/* Buttons (Tailwind-like without @apply) */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  transition: all .2s ease;
+}
+.btn-primary { background: #2563eb; color: #fff; }
+.btn-primary:hover { background: #1d4ed8; }
+.btn-accent { background: #10b981; color: #fff; }
+.btn-accent:hover { background: #059669; }
+/* Header CTA pill */
+.btn-cta-header { background: rgba(255,255,255,0.18); color:#fff; border:1px solid rgba(255,255,255,0.45); border-radius:9999px; padding: .5rem .9rem; }
+.btn-cta-header:hover { background: rgba(255,255,255,0.28); }
+/* Primary/secondary CTA used in hero */
+.btn-cta-primary { background:#2563eb; color:#fff; border-radius:.75rem; }
+.btn-cta-primary:hover { background:#1d4ed8; }
+.btn-cta-secondary { background:#ffffff; color:#075985; border:1px solid #e5e7eb; border-radius:.75rem; }
+.btn-cta-secondary:hover { background:#f8fafc; }
+
+/* Cards */
+.card {
+  background: #ffffff; /* solid for clarity over gradients */
+  border-radius: 1rem;
+  padding: 1.25rem;
+  border: 1px solid #e5e7eb;
+  box-shadow:
+    0 1px 2px rgba(0,0,0,0.04),
+    0 10px 30px -12px rgba(3, 105, 161, 0.25);
+}
+.card:hover { box-shadow: 0 4px 10px rgba(0,0,0,0.05), 0 16px 40px -12px rgba(3,105,161,0.35); }
+
+/* Elevated 3D feel for plan cards */
+.plan-card {
+  background: linear-gradient(180deg, #ffffff, #fbfdff);
+  border-radius: 1.25rem;
+  border: 1px solid #e2e8f0;
+  box-shadow:
+    0 6px 18px rgba(2,132,199,0.10),
+    0 22px 50px -20px rgba(2,132,199,0.25);
+}
+.plan-card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 10px 24px rgba(2,132,199,0.12),
+    0 28px 64px -24px rgba(2,132,199,0.30);
+}
+
+/* Service chips */
+.chip {
+  display:flex; align-items:center; justify-content:space-between;
+  background:#ffffff; border:1px solid #e5e7eb; border-radius:.75rem;
+  padding:.6rem .8rem; box-shadow: 0 1px 2px rgba(0,0,0,.04);
+}
+.chip:hover { box-shadow: 0 6px 18px rgba(2,132,199,.10); transform: translateY(-1px); }
+.icon-bubble { width:2rem; height:2rem; display:grid; place-items:center; border-radius:.6rem; background:#eff6ff; color:#1d4ed8; }
+
+/* Pill counters */
+.pill { background: rgba(255,255,255,0.95); color:#111827; border-radius:1rem; padding:.9rem 1rem; box-shadow: 0 1px 2px rgba(0,0,0,.06); }
+
+/* Outline style used in diagnosis upload label */
+.water-outline { background:#ffffff; border:1px dashed #93c5fd; color:#1d4ed8; }
+
+/* Typography */
+.heading { font-size: 1.25rem; font-weight: 700; }
+
+/* Badges */
+.badge { display:inline-flex; align-items:center; gap:.35rem; font-size:.75rem; padding:.2rem .5rem; border-radius:.5rem; border:1px solid transparent; }
+.badge-chem { background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe; }
+.badge-tool { background:#ecfeff; color:#0e7490; border-color:#a5f3fc; }
+.badge-part { background:#f0fdf4; color:#166534; border-color:#bbf7d0; }
+
+/* Progress bar */
+.progress { height:8px; background:#e5e7eb; border-radius:9999px; overflow:hidden; }
+.progress > span { display:block; height:100%; background:#60a5fa; }
+
+/* Alerts */
+.alert { border-radius:1rem; border:1px solid #fde68a; background:#fffbeb; padding:.75rem 1rem; }
+.alert-title { color:#92400e; font-weight:700; margin-bottom:.25rem; }
+.alert-item { color:#92400e; font-size:.875rem; }
+
+/* Utility fallbacks if Tailwind is not loaded for some reason */
+.no-tailwind .btn { padding: 0.5rem 1rem; border-radius: 0.5rem; }
+.no-tailwind .card { border-radius: 1rem; padding: 1.25rem; background: #fff; border: 1px solid #e5e7eb; }
