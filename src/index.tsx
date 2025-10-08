@@ -188,12 +188,18 @@ app.get('/', (c) => {
 
             {/* Cabinet */}
             <div id="panel-cabinet" className="card hidden">
-              <div className="heading mb-2">ציוד ותחזוקה</div>
-              <ul className="list-disc pr-6 text-sm text-slate-700 space-y-1">
-                <li>בדיקת מסנן</li>
-                <li>בדיקת משאבה</li>
-                <li>מלאי חומרים</li>
-              </ul>
+              <div className="heading mb-2">ארון תחזוקה דיגיטלי</div>
+              <p className="text-sm text-slate-600 mb-3">מעקב אחר חומרים, כלים וחלקי חילוף לתחזוקה שוטפת.</p>
+              <div id="cabinetSignedOut" className="text-sm text-slate-600">יש להתחבר כדי לצפות ולהתעדכן.</div>
+              <div id="cabinetApp" className="hidden">
+                <div className="flex items-center gap-2 mb-3 text-sm">
+                  <button data-cabinet-filter="all" className="btn">הכל</button>
+                  <button data-cabinet-filter="chemicals" className="btn">כימיקלים</button>
+                  <button data-cabinet-filter="tools" className="btn">כלים</button>
+                  <button data-cabinet-filter="parts" className="btn">חלקים</button>
+                </div>
+                <div id="cabinetList" className="grid gap-3"></div>
+              </div>
             </div>
 
             {/* Subscription (Pool) */}

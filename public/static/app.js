@@ -621,4 +621,110 @@
       }
     });
   });
+
+  // ==== Cabinet (Equipment & Maintenance) ====
+  (async function initCabinet(){
+    const listEl = document.getElementById('cabinetList');
+    const appEl = document.getElementById('cabinetApp');
+    const signedOutEl = document.getElementById('cabinetSignedOut');
+    if (!listEl) return;
+    const client = await (typeof supa === 'function' ? supa() : null);
+    if (!client) return;
+
+    const sess = await client.auth.getSession();
+    const uid = sess?.data?.session?.user?.id;
+    if (!uid) { signedOutEl?.classList.remove('hidden'); appEl?.classList.add('hidden'); return; }
+    signedOutEl?.classList.add('hidden'); appEl?.classList.remove('hidden');
+
+    const defaults = [
+      { key: 'cal_hypo_65', name: 'כלור גרגרים Cal-Hypo 65%', type: 'chemicals', unit:'ק"ג', min: 5, max: 15 },
+      { key: 'muriatic_33', name: 'חומצה מוריאטית 33%', type: 'chemicals', unit:'ליטר', min: 2, max: 4 },
+      { key: 'salt_chlorinator', name: 'מלח לכלורינטור', type: 'chemicals', unit:'ק"ג', min: 10, max: 50 },
+      { key: 'leaf_net', name: 'רשת לאיסוף עלים', type: 'tools', unit:'יח׳', min: 1, max: 2 },
+      { key: 'oring_50mm', name: 'O-Ring 50mm', type: 'parts', unit:'יח׳', min: 5, max: 20 },
+      { key: 'nitrile_gloves', name: 'כפפות ניטריל', type: 'tools', unit:'זוגות', min: 8, max: 20 }
+    ];
+
+    async function save(item){
+      try {
+        await client.from('pool_cabinet').upsert({
+          user_id: uid,
+          key: item.key,
+          qty: item.qty,
+          threshold: item.threshold,
+          notes: item.notes
+        });
+      } catch {}
+    }
+
+    function levelClass(item){
+      if (item.qty <= 0) return 'bg-red-50 border-red-200';
+      if (item.qty < item.threshold) return 'bg-amber-50 border-amber-200';
+      return 'bg-emerald-50 border-emerald-200';
+    }
+
+    function levelTag(item){
+      if (item.qty <= 0) return '<span class="text-red-700 text-xs">חסר</span>';
+      if (item.qty < item.threshold) return '<span class="text-amber-700 text-xs">נמוך</span>';
+      return '<span class="text-emerald-700 text-xs">מלא</span>';
+    }
+
+    function render(items){
+      listEl.innerHTML = items.map(it => `
+        <div class="rounded-xl border p-3 ${levelClass(it)}">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="font-semibold">${it.name}</div>
+              <div class="text-xs text-slate-500">מלאי נוכחי: ${it.qty} ${it.unit} • מינימום: ${it.threshold} ${it.unit}</div>
+            </div>
+            <div>${levelTag(it)}</div>
+          </div>
+          <div class="mt-2 flex items-center gap-2">
+            <button class="btn" data-dec="${it.key}">-</button>
+            <span class="text-sm w-10 text-center" data-qty="${it.key}">${it.qty}</span>
+            <button class="btn" data-inc="${it.key}">+</button>
+            <button class="btn btn-accent ml-auto" data-order="${it.key}">הזן הזמנה</button>
+          </div>
+        </div>
+      `).join('');
+
+      // Wire inc/dec/order
+      items.forEach(it => {
+        const dec = listEl.querySelector(`[data-dec="${it.key}"]`);
+        const inc = listEl.querySelector(`[data-inc="${it.key}"]`);
+        const qEl = listEl.querySelector(`[data-qty="${it.key}"]`);
+        const order = listEl.querySelector(`[data-order="${it.key}"]`);
+        dec?.addEventListener('click', async ()=>{ it.qty = Math.max(0, (it.qty||0)-1); qEl.textContent = it.qty; await save(it); load(); });
+        inc?.addEventListener('click', async ()=>{ it.qty = (it.qty||0)+1; qEl.textContent = it.qty; await save(it); load(); });
+        order?.addEventListener('click', ()=>{
+          alert('פתיחת הזמנה (דמו). בעתיד: חיבור ל-Stripe/ספקים.');
+        });
+      });
+    }
+
+    async function load(){
+      let rows = [];
+      try {
+        const { data } = await client.from('pool_cabinet').select('*').eq('user_id', uid);
+        rows = Array.isArray(data) ? data : [];
+      } catch { rows = []; }
+      const map = new Map(rows.map(r => [r.key, r]));
+      const merged = defaults.map(d => ({ ...d, qty: map.get(d.key)?.qty ?? 0, threshold: map.get(d.key)?.threshold ?? d.min, notes: map.get(d.key)?.notes ?? '' }));
+      render(merged);
+    }
+
+    // Filter buttons
+    document.querySelectorAll('[data-cabinet-filter]').forEach(btn => {
+      btn.addEventListener('click', async ()=>{
+        const type = btn.getAttribute('data-cabinet-filter');
+        const { data } = await client.from('pool_cabinet').select('*').eq('user_id', uid);
+        const map = new Map((data||[]).map(r => [r.key, r]));
+        const merged = defaults.map(d => ({ ...d, qty: map.get(d.key)?.qty ?? 0, threshold: map.get(d.key)?.threshold ?? d.min, notes: map.get(d.key)?.notes ?? '' }));
+        const filtered = type === 'all' ? merged : merged.filter(i => i.type === type);
+        render(filtered);
+      });
+    });
+
+    await load();
+  })();
 })();
