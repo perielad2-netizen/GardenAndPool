@@ -28,7 +28,7 @@ app.use(renderer)
 // ------------------- UI -------------------
 app.get('/', (c) => {
   return c.render(
-    <main className="pb-24 sm:pb-0">
+    <main className="pb-24 sm:pb-0 page-snap-y">
       <header className="sticky top-0 z-30 backdrop-blur bg-white/10 border-b border-white/20">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -57,7 +57,7 @@ app.get('/', (c) => {
         </div>
       </header>
 
-      <section className="relative overflow-hidden">
+      <section className="relative overflow-hidden snap-start">
         <div className="absolute inset-0 -z-10">
           <div className="absolute -top-32 -left-32 w-72 h-72 bg-white/20 rounded-full blur-3xl"></div>
           <div className="absolute top-1/2 right-0 w-96 h-96 bg-cyan-200/30 rounded-full blur-3xl"></div>
@@ -93,7 +93,7 @@ app.get('/', (c) => {
         </div>
       </section>
 
-      <section id="services" className="bg-white/60 backdrop-blur rounded-t-3xl -mt-2">
+      <section id="services" className="bg-white/60 backdrop-blur rounded-t-3xl -mt-2 snap-start">
         <div className="max-w-5xl mx-auto px-4 py-10">
           <h2 className="text-2xl font-bold mb-6">שירותים</h2>
 
@@ -119,10 +119,10 @@ app.get('/', (c) => {
             ))}
           </div>
 
-          {/* Panels */}
-          <div className="space-y-6">
+          {/* Panels: horizontal snap on mobile/tablet */}
+          <div id="panelsScroller" className="space-y-6 panels-horizontal">
             {/* Diagnosis */}
-            <div id="panel-diagnosis" className="card">
+            <div id="panel-diagnosis" className="card panel-item">
               <div className="heading mb-2">אבחון מהיר באמצעות תמונה</div>
               <form id="diagnosisForm" className="space-y-3">
                 <input id="diagFile" type="file" name="image" accept="image/*" className="hidden" required />
@@ -143,7 +143,7 @@ app.get('/', (c) => {
             </div>
 
             {/* Scheduler */}
-            <div id="panel-scheduler" className="card hidden">
+            <div id="panel-scheduler" className="card hidden panel-item">
               <div className="heading mb-2">תיאום טכנאי</div>
               <form id="schedulerForm" className="grid gap-3">
                 <div className="grid sm:grid-cols-2 gap-3">
@@ -184,7 +184,7 @@ app.get('/', (c) => {
             </div>
 
             {/* Cabinet */}
-            <div id="panel-cabinet" className="card hidden">
+            <div id="panel-cabinet" className="card hidden panel-item">
               <div className="heading mb-2">ארון תחזוקה דיגיטלי</div>
               <p className="text-sm text-slate-600 mb-3">מעקב אחר חומרים, כלים וחלקי חילוף לתחזוקה שוטפת.</p>
               <div id="cabinetSignedOut" className="text-sm text-slate-600">יש להתחבר כדי לצפות ולהתעדכן.</div>
@@ -201,90 +201,119 @@ app.get('/', (c) => {
             </div>
 
             {/* Subscription (Pool) */}
-            <div id="panel-subscription" className="card hidden">
+            <div id="panel-subscription" className="card hidden panel-item">
               <div className="heading mb-2">מנויים</div>
               <div className="grid sm:grid-cols-2 lg:grid-cols-2 gap-4">
                 {/* מנוי VIP */}
-                <div className="plan-card p-5">
-                  <h3 className="font-bold text-lg mb-1">מנוי VIP</h3>
-                  <p className="text-sm text-slate-600 mb-3">שירות פרימיום עם גיבוי הנדסי מלא</p>
-                  <ul className="text-sm text-slate-700 space-y-1 mb-3">
-                    <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>כל מה שבמנוי מלא</li>
-                    <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>ביקור צוות מלא כל חודש</li>
-                    <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>פיקוח הנדסי ע״י מהנדס אזרחי</li>
-                    <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>SOS ללא הגבלה</li>
-                    <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>כימיקלים כלולים במחיר</li>
-                    <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>ריסוס בית רבעוני</li>
-                    <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>דו״ח הנדסי שנתי</li>
-                    <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>הנחות על שדרוגים</li>
-                  </ul>
-                  <div className="text-sm text-slate-600 mb-1 font-medium">הצוות שלנו</div>
-                  <div className="text-sm text-slate-700 mb-3">אינסטלטור • קונסטרוקטור • חשמלאי • איש משאבות • מהנדס אזרחי</div>
-                  <div className="text-sm text-slate-600 mb-1 font-medium">מה כלול:</div>
-                  <ul className="text-sm text-slate-700 space-y-1">
-                    <li>ביקורים: <b>שבועי בקיץ, ביקור צוות חודשי</b></li>
-                    <li>קריאות SOS: <b>ללא הגבלה</b></li>
-                    <li>כימיקלים: <b>כלול</b></li>
-                    <li>ריסוס בית: <b>כלול</b></li>
-                    <li>פיקוח הנדסי: <b>כלול</b></li>
-                  </ul>
+                <div className="plan-card p-4">
+                  <button className="w-full flex items-center justify-between text-right" data-plan-toggle>
+                    <div>
+                      <h3 className="font-bold text-lg">מנוי VIP</h3>
+                      <p className="text-sm text-slate-600">שירות פרימיום עם גיבוי הנדסי מלא</p>
+                    </div>
+                    <span className="text-slate-500"><i className="fas fa-chevron-down"></i></span>
+                  </button>
+                  <div className="plan-details mt-3 hidden">
+                    <ul className="text-sm text-slate-700 space-y-1 mb-3">
+                      <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>כל מה שבמנוי מלא</li>
+                      <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>ביקור צוות מלא כל חודש</li>
+                      <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>פיקוח הנדסי ע״י מהנדס אזרחי</li>
+                      <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>SOS ללא הגבלה</li>
+                      <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>כימיקלים כלולים במחיר</li>
+                      <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>ריסוס בית רבעוני</li>
+                      <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>דו״ח הנדסי שנתי</li>
+                      <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>הנחות על שדרוגים</li>
+                    </ul>
+                    <div className="text-sm text-slate-600 mb-1 font-medium">הצוות שלנו</div>
+                    <div className="text-sm text-slate-700 mb-3">אינסטלטור • קונסטרוקטור • חשמלאי • איש משאבות • מהנדס אזרחי</div>
+                    <div className="text-sm text-slate-600 mb-1 font-medium">מה כלול:</div>
+                    <ul className="text-sm text-slate-700 space-y-1">
+                      <li>ביקורים: <b>שבועי בקיץ, ביקור צוות חודשי</b></li>
+                      <li>קריאות SOS: <b>ללא הגבלה</b></li>
+                      <li>כימיקלים: <b>כלול</b></li>
+                      <li>ריסוס בית: <b>כלול</b></li>
+                      <li>פיקוח הנדסי: <b>כלול</b></li>
+                    </ul>
+                  </div>
                 </div>
                 {/* מנוי מלא */}
-                <div className="plan-card p-5">
-                  <h3 className="font-bold text-lg mb-1">מנוי מלא</h3>
-                  <p className="text-sm text-slate-600 mb-3">תחזוקה מלאה כל השנה</p>
-                  <ul className="text-sm text-slate-700 space-y-1 mb-3">
-                    <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>כל מה שבמנוי קיץ</li>
-                    <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>סגירת בריכה וכיסוי לחורף</li>
-                    <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>ניקוז חלקי ובדיקות איטום</li>
-                    <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>2 קריאות SOS בחינם בשנה</li>
-                    <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>הנחה 15% על חומרים</li>
-                    <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>ביקור טכנאי חודשי</li>
-                  </ul>
-                  <div className="text-sm text-slate-600 mb-1 font-medium">הצוות שלנו</div>
-                  <div className="text-sm text-slate-700 mb-3">איש משאבות • אינסטלטור • חשמלאי</div>
-                  <div className="text-sm text-slate-600 mb-1 font-medium">מה כלול:</div>
-                  <ul className="text-sm text-slate-700 space-y-1">
-                    <li>ביקורים: <b>שבועי בקיץ, חודשי בחורף</b></li>
-                    <li>קריאות SOS: <b>2 חינם</b></li>
-                    <li>כימיקלים: <b>נפרד</b></li>
-                    <li>ריסוס בית: <b>נפרד</b></li>
-                    <li>פיקוח הנדסי: <b>לא</b></li>
-                  </ul>
+                <div className="plan-card p-4">
+                  <button className="w-full flex items-center justify-between text-right" data-plan-toggle>
+                    <div>
+                      <h3 className="font-bold text-lg">מנוי מלא</h3>
+                      <p className="text-sm text-slate-600">תחזוקה מלאה כל השנה</p>
+                    </div>
+                    <span className="text-slate-500"><i className="fas fa-chevron-down"></i></span>
+                  </button>
+                  <div className="plan-details mt-3 hidden">
+                    <ul className="text-sm text-slate-700 space-y-1 mb-3">
+                      <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>כל מה שבמנוי קיץ</li>
+                      <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>סגירת בריכה וכיסוי לחורף</li>
+                      <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>ניקוז חלקי ובדיקות איטום</li>
+                      <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>2 קריאות SOS בחינם בשנה</li>
+                      <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>הנחה 15% על חומרים</li>
+                      <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>ביקור טכנאי חודשי</li>
+                    </ul>
+                    <div className="text-sm text-slate-600 mb-1 font-medium">הצוות שלנו</div>
+                    <div className="text-sm text-slate-700 mb-3">איש משאבות • אינסטלטור • חשמלאי</div>
+                    <div className="text-sm text-slate-600 mb-1 font-medium">מה כלול:</div>
+                    <ul className="text-sm text-slate-700 space-y-1">
+                      <li>ביקורים: <b>שבועי בקיץ, חודשי בחורף</b></li>
+                      <li>קריאות SOS: <b>2 חינם</b></li>
+                      <li>כימיקלים: <b>נפרד</b></li>
+                      <li>ריסוס בית: <b>נפרד</b></li>
+                      <li>פיקוח הנדסי: <b>לא</b></li>
+                    </ul>
+                  </div>
                 </div>
                 {/* מנוי קיץ */}
-                <div className="plan-card p-5">
-                  <h3 className="font-bold text-lg mb-1">מנוי קיץ</h3>
-                  <p className="text-sm text-slate-600 mb-3">תחזוקה מקצועית לעונת הרחצה</p>
-                  <ul className="text-sm text-slate-700 space-y-1 mb-3">
-                    <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>תחזוקה שוטפת מאי-ספטמבר</li>
-                    <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>ניקוי שבועי ובדיקות מים</li>
-                    <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>מילוי מים לפי צורך</li>
-                    <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>ביקור חירום אחד בחינם</li>
-                    <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>ייעוץ טלפוני ללא הגבלה</li>
-                  </ul>
-                  <div className="text-sm text-slate-600 mb-1 font-medium">הצוות שלנו</div>
-                  <div className="text-sm text-slate-700 mb-3">איש משאבות • מנקה מקצועי</div>
-                  <div className="text-sm text-slate-600 mb-1 font-medium">מה כלול:</div>
-                  <ul className="text-sm text-slate-700 space-y-1">
-                    <li>ביקורים: <b>שבועי</b></li>
-                    <li>קריאות SOS: <b>1 חינם</b></li>
-                    <li>כימיקלים: <b>נפרד</b></li>
-                    <li>ריסוס בית: <b>נפרד</b></li>
-                    <li>פיקוח הנדסי: <b>לא</b></li>
-                  </ul>
+                <div className="plan-card p-4">
+                  <button className="w-full flex items-center justify-between text-right" data-plan-toggle>
+                    <div>
+                      <h3 className="font-bold text-lg">מנוי קיץ</h3>
+                      <p className="text-sm text-slate-600">תחזוקה מקצועית לעונת הרחצה</p>
+                    </div>
+                    <span className="text-slate-500"><i className="fas fa-chevron-down"></i></span>
+                  </button>
+                  <div className="plan-details mt-3 hidden">
+                    <ul className="text-sm text-slate-700 space-y-1 mb-3">
+                      <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>תחזוקה שוטפת מאי-ספטמבר</li>
+                      <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>ניקוי שבועי ובדיקות מים</li>
+                      <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>מילוי מים לפי צורך</li>
+                      <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>ביקור חירום אחד בחינם</li>
+                      <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>ייעוץ טלפוני ללא הגבלה</li>
+                    </ul>
+                    <div className="text-sm text-slate-600 mb-1 font-medium">הצוות שלנו</div>
+                    <div className="text-sm text-slate-700 mb-3">איש משאבות • מנקה מקצועי</div>
+                    <div className="text-sm text-slate-600 mb-1 font-medium">מה כלול:</div>
+                    <ul className="text-sm text-slate-700 space-y-1">
+                      <li>ביקורים: <b>שבועי</b></li>
+                      <li>קריאות SOS: <b>1 חינם</b></li>
+                      <li>כימיקלים: <b>נפרד</b></li>
+                      <li>ריסוס בית: <b>נפרד</b></li>
+                      <li>פיקוח הנדסי: <b>לא</b></li>
+                    </ul>
+                  </div>
                 </div>
                 {/* מנוי גינון */}
-                <div className="plan-card p-5">
-                  <h3 className="font-bold text-lg mb-1">מנוי גינון</h3>
-                  <p className="text-sm text-slate-600">פרטים בהמשך</p>
+                <div className="plan-card p-4">
+                  <button className="w-full flex items-center justify-between text-right" data-plan-toggle>
+                    <div>
+                      <h3 className="font-bold text-lg">מנוי גינון</h3>
+                      <p className="text-sm text-slate-600">פרטים בהמשך</p>
+                    </div>
+                    <span className="text-slate-500"><i className="fas fa-chevron-down"></i></span>
+                  </button>
+                  <div className="plan-details mt-3 hidden">
+                    <p className="text-sm text-slate-600">פרטים בהמשך</p>
+                  </div>
                 </div>
               </div>
             </div>
 
 
             {/* Smart Chat */}
-            <div id="panel-chat" className="card hidden">
+            <div id="panel-chat" className="card hidden panel-item">
               <div className="heading mb-2">צ׳אט חכם</div>
               <div className="flex gap-2">
                 <input id="chatInput" className="flex-1 border rounded-lg px-3 py-2" placeholder="שאל שאלה על תחזוקת בריכה" />
@@ -297,7 +326,7 @@ app.get('/', (c) => {
 
 
             {/* Portal (read-only) */}
-            <div id="panel-portal" className="card hidden">
+            <div id="panel-portal" className="card hidden panel-item">
               <div className="heading mb-2">הפורטל שלי</div>
               <div id="portalSignedOut" className="text-sm text-slate-600">יש להתחבר כדי לצפות בפרטים האישיים.</div>
               <div id="portalContent" className="hidden space-y-3">
@@ -324,86 +353,115 @@ app.get('/', (c) => {
       </section>
 
 
-      <section id="plans" className="bg-white">
+      <section id="plans" className="bg-white snap-start">
         <div className="max-w-5xl mx-auto px-4 py-10">
           <h2 className="text-2xl font-bold mb-6">מנויים</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-2 gap-4">
-            <div className="plan-card p-5">
-              <h3 className="font-bold text-lg mb-1">מנוי VIP</h3>
-              <p className="text-sm text-slate-600 mb-3">שירות פרימיום עם גיבוי הנדסי מלא</p>
-              <ul className="text-sm text-slate-700 space-y-1 mb-3">
-                <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>כל מה שבמנוי מלא</li>
-                <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>ביקור צוות מלא כל חודש</li>
-                <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>פיקוח הנדסי ע״י מהנדס אזרחי</li>
-                <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>SOS ללא הגבלה</li>
-                <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>כימיקלים כלולים במחיר</li>
-                <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>ריסוס בית רבעוני</li>
-                <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>דו״ח הנדסי שנתי</li>
-                <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>הנחות על שדרוגים</li>
-              </ul>
-              <div className="text-sm text-slate-600 mb-1 font-medium">הצוות שלנו</div>
-              <div className="text-sm text-slate-700 mb-3">אינסטלטור • קונסטרוקטור • חשמלאי • איש משאבות • מהנדס אזרחי</div>
-              <div className="text-sm text-slate-600 mb-1 font-medium">מה כלול:</div>
-              <ul className="text-sm text-slate-700 space-y-1">
-                <li>ביקורים: <b>שבועי בקיץ, ביקור צוות חודשי</b></li>
-                <li>קריאות SOS: <b>ללא הגבלה</b></li>
-                <li>כימיקלים: <b>כלול</b></li>
-                <li>ריסוס בית: <b>כלול</b></li>
-                <li>פיקוח הנדסי: <b>כלול</b></li>
-              </ul>
+            <div className="plan-card p-4">
+              <button className="w-full flex items-center justify-between text-right" data-plan-toggle>
+                <div>
+                  <h3 className="font-bold text-lg">מנוי VIP</h3>
+                  <p className="text-sm text-slate-600">שירות פרימיום עם גיבוי הנדסי מלא</p>
+                </div>
+                <span className="text-slate-500"><i className="fas fa-chevron-down"></i></span>
+              </button>
+              <div className="plan-details mt-3 hidden">
+                <ul className="text-sm text-slate-700 space-y-1 mb-3">
+                  <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>כל מה שבמנוי מלא</li>
+                  <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>ביקור צוות מלא כל חודש</li>
+                  <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>פיקוח הנדסי ע״י מהנדס אזרחי</li>
+                  <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>SOS ללא הגבלה</li>
+                  <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>כימיקלים כלולים במחיר</li>
+                  <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>ריסוס בית רבעוני</li>
+                  <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>דו״ח הנדסי שנתי</li>
+                  <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>הנחות על שדרוגים</li>
+                </ul>
+                <div className="text-sm text-slate-600 mb-1 font-medium">הצוות שלנו</div>
+                <div className="text-sm text-slate-700 mb-3">אינסטלטור • קונסטרוקטור • חשמלאי • איש משאבות • מהנדס אזרחי</div>
+                <div className="text-sm text-slate-600 mb-1 font-medium">מה כלול:</div>
+                <ul className="text-sm text-slate-700 space-y-1">
+                  <li>ביקורים: <b>שבועי בקיץ, ביקור צוות חודשי</b></li>
+                  <li>קריאות SOS: <b>ללא הגבלה</b></li>
+                  <li>כימיקלים: <b>כלול</b></li>
+                  <li>ריסוס בית: <b>כלול</b></li>
+                  <li>פיקוח הנדסי: <b>כלול</b></li>
+                </ul>
+              </div>
             </div>
-            <div className="plan-card p-5">
-              <h3 className="font-bold text-lg mb-1">מנוי מלא</h3>
-              <p className="text-sm text-slate-600 mb-3">תחזוקה מלאה כל השנה</p>
-              <ul className="text-sm text-slate-700 space-y-1 mb-3">
-                <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>כל מה שבמנוי קיץ</li>
-                <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>סגירת בריכה וכיסוי לחורף</li>
-                <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>ניקוז חלקי ובדיקות איטום</li>
-                <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>2 קריאות SOS בחינם בשנה</li>
-                <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>הנחה 15% על חומרים</li>
-                <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>ביקור טכנאי חודשי</li>
-              </ul>
-              <div className="text-sm text-slate-600 mb-1 font-medium">הצוות שלנו</div>
-              <div className="text-sm text-slate-700 mb-3">איש משאבות • אינסטלטור • חשמלאי</div>
-              <div className="text-sm text-slate-600 mb-1 font-medium">מה כלול:</div>
-              <ul className="text-sm text-slate-700 space-y-1">
-                <li>ביקורים: <b>שבועי בקיץ, חודשי בחורף</b></li>
-                <li>קריאות SOS: <b>2 חינם</b></li>
-                <li>כימיקלים: <b>נפרד</b></li>
-                <li>ריסוס בית: <b>נפרד</b></li>
-                <li>פיקוח הנדסי: <b>לא</b></li>
-              </ul>
+            <div className="plan-card p-4">
+              <button className="w-full flex items-center justify-between text-right" data-plan-toggle>
+                <div>
+                  <h3 className="font-bold text-lg">מנוי מלא</h3>
+                  <p className="text-sm text-slate-600">תחזוקה מלאה כל השנה</p>
+                </div>
+                <span className="text-slate-500"><i className="fas fa-chevron-down"></i></span>
+              </button>
+              <div className="plan-details mt-3 hidden">
+                <ul className="text-sm text-slate-700 space-y-1 mb-3">
+                  <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>כל מה שבמנוי קיץ</li>
+                  <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>סגירת בריכה וכיסוי לחורף</li>
+                  <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>ניקוז חלקי ובדיקות איטום</li>
+                  <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>2 קריאות SOS בחינם בשנה</li>
+                  <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>הנחה 15% על חומרים</li>
+                  <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>ביקור טכנאי חודשי</li>
+                </ul>
+                <div className="text-sm text-slate-600 mb-1 font-medium">הצוות שלנו</div>
+                <div className="text-sm text-slate-700 mb-3">איש משאבות • אינסטלטור • חשמלאי</div>
+                <div className="text-sm text-slate-600 mb-1 font-medium">מה כלול:</div>
+                <ul className="text-sm text-slate-700 space-y-1">
+                  <li>ביקורים: <b>שבועי בקיץ, חודשי בחורף</b></li>
+                  <li>קריאות SOS: <b>2 חינם</b></li>
+                  <li>כימיקלים: <b>נפרד</b></li>
+                  <li>ריסוס בית: <b>נפרד</b></li>
+                  <li>פיקוח הנדסי: <b>לא</b></li>
+                </ul>
+              </div>
             </div>
-            <div className="plan-card p-5">
-              <h3 className="font-bold text-lg mb-1">מנוי קיץ</h3>
-              <p className="text-sm text-slate-600 mb-3">תחזוקה מקצועית לעונת הרחצה</p>
-              <ul className="text-sm text-slate-700 space-y-1 mb-3">
-                <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>תחזוקה שוטפת מאי-ספטמבר</li>
-                <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>ניקוי שבועי ובדיקות מים</li>
-                <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>מילוי מים לפי צורך</li>
-                <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>ביקור חירום אחד בחינם</li>
-                <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>ייעוץ טלפוני ללא הגבלה</li>
-              </ul>
-              <div className="text-sm text-slate-600 mb-1 font-medium">הצוות שלנו</div>
-              <div className="text-sm text-slate-700 mb-3">איש משאבות • מנקה מקצועי</div>
-              <div className="text-sm text-slate-600 mb-1 font-medium">מה כלול:</div>
-              <ul className="text-sm text-slate-700 space-y-1">
-                <li>ביקורים: <b>שבועי</b></li>
-                <li>קריאות SOS: <b>1 חינם</b></li>
-                <li>כימיקלים: <b>נפרד</b></li>
-                <li>ריסוס בית: <b>נפרד</b></li>
-                <li>פיקוח הנדסי: <b>לא</b></li>
-              </ul>
+            <div className="plan-card p-4">
+              <button className="w-full flex items-center justify-between text-right" data-plan-toggle>
+                <div>
+                  <h3 className="font-bold text-lg">מנוי קיץ</h3>
+                  <p className="text-sm text-slate-600">תחזוקה מקצועית לעונת הרחצה</p>
+                </div>
+                <span className="text-slate-500"><i className="fas fa-chevron-down"></i></span>
+              </button>
+              <div className="plan-details mt-3 hidden">
+                <ul className="text-sm text-slate-700 space-y-1 mb-3">
+                  <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>תחזוקה שוטפת מאי-ספטמבר</li>
+                  <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>ניקוי שבועי ובדיקות מים</li>
+                  <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>מילוי מים לפי צורך</li>
+                  <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>ביקור חירום אחד בחינם</li>
+                  <li className="flex items-center gap-2"><i className="fas fa-check text-emerald-500"></i>ייעוץ טלפוני ללא הגבלה</li>
+                </ul>
+                <div className="text-sm text-slate-600 mb-1 font-medium">הצוות שלנו</div>
+                <div className="text-sm text-slate-700 mb-3">איש משאבות • מנקה מקצועי</div>
+                <div className="text-sm text-slate-600 mb-1 font-medium">מה כלול:</div>
+                <ul className="text-sm text-slate-700 space-y-1">
+                  <li>ביקורים: <b>שבועי</b></li>
+                  <li>קריאות SOS: <b>1 חינם</b></li>
+                  <li>כימיקלים: <b>נפרד</b></li>
+                  <li>ריסוס בית: <b>נפרד</b></li>
+                  <li>פיקוח הנדסי: <b>לא</b></li>
+                </ul>
+              </div>
             </div>
-            <div className="plan-card p-5">
-              <h3 className="font-bold text-lg mb-1">מנוי גינון</h3>
-              <p className="text-sm text-slate-600">פרטים בהמשך</p>
+            <div className="plan-card p-4">
+              <button className="w-full flex items-center justify-between text-right" data-plan-toggle>
+                <div>
+                  <h3 className="font-bold text-lg">מנוי גינון</h3>
+                  <p className="text-sm text-slate-600">פרטים בהמשך</p>
+                </div>
+                <span className="text-slate-500"><i className="fas fa-chevron-down"></i></span>
+              </button>
+              <div className="plan-details mt-3 hidden">
+                <p className="text-sm text-slate-600">פרטים בהמשך</p>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <footer id="contact" className="bg-slate-900 text-white">
+      <footer id="contact" className="bg-slate-900 text-white snap-start">
         <div className="max-w-5xl mx-auto px-4 py-8 grid sm:grid-cols-3 gap-6">
           <div>
             <div className="font-bold mb-2">צור קשר</div>

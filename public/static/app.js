@@ -30,6 +30,8 @@
     'chat': document.getElementById('panel-chat'),
     'portal': document.getElementById('panel-portal')
   };
+  const panelsScroller = document.getElementById('panelsScroller');
+  const isMobileTablet = () => window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
   function setActive(id, opts){
     const o = Object.assign({ scroll: true }, opts || {});
     Object.values(panels).forEach(el => el && el.classList.add('hidden'));
@@ -37,7 +39,16 @@
     if(panel){
       panel.classList.remove('hidden');
       if (o.scroll) {
-        try{ panel.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch(_){ }
+        try{
+          if (isMobileTablet() && panelsScroller && panelsScroller.classList.contains('panels-horizontal')) {
+            // Horizontal scroll to panel (mobile/tablet)
+            const x = panel.offsetLeft - (panelsScroller.offsetLeft || 0);
+            panelsScroller.scrollTo({ left: x, behavior: 'smooth' });
+          } else {
+            // Default vertical scroll
+            panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        } catch(_){ }
       }
     }
 
@@ -654,6 +665,39 @@
   }
   if (chatSend) chatSend.addEventListener('click', sendChat);
   if (chatInput) chatInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendChat(); });
+
+  // Collapsible plan cards (מנויים)
+  (function initPlanToggles(){
+    const toggles = document.querySelectorAll('[data-plan-toggle]');
+    if (!toggles || toggles.length === 0) return;
+    toggles.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const card = btn.closest('.plan-card');
+        if (!card) return;
+        const details = card.querySelector('.plan-details');
+        if (!details) return;
+
+        // Optional accordion: collapse siblings in same container
+        const container = card.parentElement || document;
+        container.querySelectorAll('.plan-card .plan-details').forEach(el => {
+          if (el !== details) el.classList.add('hidden');
+        });
+        container.querySelectorAll('[data-plan-toggle] .fa-chevron-down').forEach(ic => {
+          if (btn.contains(ic)) return; // current icon handled below
+          ic.classList.remove('rotate-180');
+          ic.classList.add('transition-transform','duration-200');
+        });
+
+        // Toggle current
+        details.classList.toggle('hidden');
+        const icon = btn.querySelector('.fa-chevron-down');
+        if (icon) {
+          icon.classList.add('transition-transform','duration-200');
+          icon.classList.toggle('rotate-180');
+        }
+      });
+    });
+  })();
 
   // Feature modal helper
   function openFeatureModal(){
