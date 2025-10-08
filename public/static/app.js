@@ -423,20 +423,20 @@
     diagForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const fd = new FormData(diagForm);
-      diagOut.textContent = 'Analyzing...';
+      diagOut.textContent = 'מנתח...';
       try {
         // If AI disabled, show maintenance modal
         const cfg = await fetch('/api/config/env').then(r=>r.json()).catch(()=>({features:{aiEnabled:false}}));
         if (!cfg.features?.aiEnabled) {
           openFeatureModal();
-          diagOut.textContent = 'AI temporarily unavailable.';
+          diagOut.textContent = 'ה-AI אינו זמין זמנית.';
           return;
         }
         const res = await fetch('/api/diagnose', { method: 'POST', body: fd });
         const data = await res.json();
         diagOut.textContent = JSON.stringify(data, null, 2);
       } catch (err) {
-        diagOut.textContent = 'Error during analysis.';
+        diagOut.textContent = 'שגיאה בזמן הניתוח.';
       }
     });
   }
@@ -561,7 +561,7 @@
         openFeatureModal();
         const reply = document.createElement('div');
         reply.className = 'p-2 rounded-lg bg-white border';
-        reply.textContent = 'AI chat temporarily unavailable.';
+        reply.textContent = 'צ׳אט ה-AI אינו זמין זמנית.';
         chatLog.appendChild(reply);
         return;
       }
@@ -569,12 +569,12 @@
       const data = await res.json();
       const reply = document.createElement('div');
       reply.className = 'p-2 rounded-lg bg-white border';
-      reply.textContent = data.answer || data.error || 'No response';
+      reply.textContent = data.answer || data.error || 'אין תגובה';
       chatLog.appendChild(reply);
     } catch (e) {
       const reply = document.createElement('div');
       reply.className = 'p-2 rounded-lg bg-white border';
-      reply.textContent = 'Error contacting server.';
+      reply.textContent = 'שגיאה בתקשור לשרת.';
       chatLog.appendChild(reply);
     }
   }
