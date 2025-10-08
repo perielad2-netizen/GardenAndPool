@@ -114,6 +114,8 @@
     // Modal controls (primary)
     const authEmailModal = document.getElementById('authEmailModal');
     const authPasswordModal = document.getElementById('authPasswordModal');
+    const authPasswordConfirm = document.getElementById('authPasswordConfirm');
+    const authShowPassword = document.getElementById('authShowPassword');
     const btnLoginModal = document.getElementById('btnLoginModal');
     const btnRegisterModal = document.getElementById('btnRegisterModal');
     const btnResetModal = document.getElementById('btnResetModal');
@@ -412,8 +414,12 @@
       await refreshPortal();
     });
     btnRegisterModal?.addEventListener('click', async () => {
+      const pw = (authPasswordModal?.value || '').trim();
+      const pw2 = (authPasswordConfirm?.value || '').trim();
+      if (pw.length < 6) { authStatusModal.textContent = 'הסיסמה קצרה מדי (מינ׳ 6 תווים)'; return; }
+      if (pw !== pw2) { authStatusModal.textContent = 'האימות לא תואם את הסיסמה'; return; }
       authStatusModal.textContent = 'נרשם...';
-      const { error } = await client.auth.signUp({ email: authEmailModal.value, password: authPasswordModal.value });
+      const { error } = await client.auth.signUp({ email: authEmailModal.value, password: pw });
       authStatusModal.textContent = error ? ('שגיאה: ' + error.message) : 'נרשם! בדוק/י דוא"ל לאימות';
       await refreshPortal();
     });
@@ -432,21 +438,33 @@
     // Tabs switching
     function switchTab(which){
       if (!tabLogin || !tabRegister || !loginActions || !registerActions) return;
+      const confirm = authPasswordConfirm;
       if (which === 'login') {
         tabLogin.classList.add('bg-slate-100');
         tabRegister.classList.remove('bg-slate-100');
         loginActions.classList.remove('hidden');
         registerActions.classList.add('hidden');
+        confirm && confirm.classList.add('hidden');
       } else {
         tabRegister.classList.add('bg-slate-100');
         tabLogin.classList.remove('bg-slate-100');
         registerActions.classList.remove('hidden');
         loginActions.classList.add('hidden');
+        confirm && confirm.classList.remove('hidden');
       }
       authStatusModal && (authStatusModal.textContent = '');
     }
     tabLogin && tabLogin.addEventListener('click', ()=> switchTab('login'));
     tabRegister && tabRegister.addEventListener('click', ()=> switchTab('register'));
+
+    // Show password toggle
+    if (authShowPassword && authPasswordModal) {
+      authShowPassword.addEventListener('change', () => {
+        const type = authShowPassword.checked ? 'text' : 'password';
+        authPasswordModal.type = type;
+        if (authPasswordConfirm) authPasswordConfirm.type = type;
+      });
+    }
 
     // On load, refresh
     await refreshPortal();

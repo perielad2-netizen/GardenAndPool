@@ -454,6 +454,12 @@ app.get('/', (c) => {
             <div className="grid gap-3">
               <input id="authEmailModal" type="email" placeholder="דוא&quot;ל" className="border rounded-lg px-3 py-2" />
               <input id="authPasswordModal" type="password" placeholder="סיסמה" className="border rounded-lg px-3 py-2" />
+              {/* Show password toggle */}
+              <label className="flex items-center gap-2 text-xs text-slate-600">
+                <input id="authShowPassword" type="checkbox" className="rounded" /> הצג סיסמה
+              </label>
+              {/* Confirm password (register only) */}
+              <input id="authPasswordConfirm" type="password" placeholder="אימות סיסמה" className="border rounded-lg px-3 py-2 hidden" />
 
               {/* Login actions */}
               <div id="authLoginActions" className="flex gap-2">
