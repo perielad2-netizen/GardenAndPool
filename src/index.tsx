@@ -578,8 +578,8 @@ app.post('/api/schedule/check', async (c) => {
       return c.json({ ok: true, source: 'noop' })
     }
 
-    // Supabase REST check for an existing appointment on that exact window_start
-    const endpoint = `${url.replace(/\/?$/, '')}/rest/v1/appointments?select=id&window_start=eq.${encodeURIComponent(startIso)}`
+    // Supabase REST check for an existing appointment on that exact window_start (only active statuses)
+    const endpoint = `${url.replace(/\/?$/, '')}/rest/v1/appointments?select=id&window_start=eq.${encodeURIComponent(startIso)}&status=in.(pending,confirmed)`
     const resp = await fetch(endpoint, {
       headers: {
         'apikey': key,
@@ -594,6 +594,54 @@ app.post('/api/schedule/check', async (c) => {
     const list = await resp.json<any[]>()
     if (Array.isArray(list) && list.length > 0) return c.json({ ok: false, conflict: true }, 409)
     return c.json({ ok: true, conflict: false })
+  } catch (e) {
+    return c.json({ error: 'server_error' }, 500)
+  }
+})
+
+// ------------------- API: Appointments - cancel with Israel same-day prohibition -------------------
+app.post('/api/appointments/cancel', async (c) => {
+  try {
+    const { id } = await c.req.json<{ id: string }>().catch(() => ({ id: '' }))
+    if (!id) return c.json({ error: 'missing id' }, 400)
+
+    const url = c.env.PUBLIC_SUPABASE_URL
+    const key = c.env.SUPABASE_SERVICE_KEY
+    if (!url || !key) return c.json({ error: 'not_configured' }, 501)
+
+    // Fetch appointment
+    const fetchUrl = `${url.replace(/\/?$/, '')}/rest/v1/appointments?select=id,window_start,status&id=eq.${encodeURIComponent(id)}`
+    const getResp = await fetch(fetchUrl, { headers: { 'apikey': key, 'Authorization': `Bearer ${key}`, 'Accept': 'application/json' } })
+    if (!getResp.ok) return c.json({ error: 'fetch_failed' }, 502)
+    const arr = await getResp.json<any[]>()
+    const appt = Array.isArray(arr) ? arr[0] : null
+    if (!appt) return c.json({ error: 'not_found' }, 404)
+
+    // Israel same-day rule
+    const tz = 'Asia/Jerusalem'
+    const nowIL = new Date(new Date().toLocaleString('en-US', { timeZone: tz }))
+    const startIL = new Date(new Date(appt.window_start).toLocaleString('en-US', { timeZone: tz }))
+    const sameDay = nowIL.getFullYear() === startIL.getFullYear() && nowIL.getMonth() === startIL.getMonth() && nowIL.getDate() === startIL.getDate()
+    if (sameDay) return c.json({ error: 'same_day_forbidden' }, 400)
+
+    // Update status to cancelled
+    const updUrl = `${url.replace(/\/?$/, '')}/rest/v1/appointments?id=eq.${encodeURIComponent(id)}`
+    const updResp = await fetch(updUrl, {
+      method: 'PATCH',
+      headers: {
+        'apikey': key,
+        'Authorization': `Bearer ${key}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify({ status: 'cancelled' })
+    })
+    if (!updResp.ok) {
+      const txt = await updResp.text();
+      return c.json({ error: 'update_failed', detail: txt }, 502)
+    }
+    const updated = await updResp.json<any>()
+    return c.json({ ok: true, data: updated })
   } catch (e) {
     return c.json({ error: 'server_error' }, 500)
   }

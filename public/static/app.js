@@ -309,12 +309,18 @@
               btn.addEventListener('click', async () => {
                 const id = btn.getAttribute('data-cancel');
                 try {
-                  const { error } = await client.from('appointments').update({ status: 'cancelled' }).eq('id', id);
-                  if (!error) {
-                    const evt = new Event('portal-refresh');
-                    window.dispatchEvent(evt);
+                  // Call server to enforce same-day rule (Israel time)
+                  const res = await fetch('/api/appointments/cancel', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id }) });
+                  if (!res.ok) {
+                    const data = await res.json().catch(()=>({}));
+                    alert(data?.error === 'same_day_forbidden' ? 'לא ניתן לבטל באותו היום' : 'שגיאה בביטול');
+                    return;
                   }
-                } catch {}
+                  const evt = new Event('portal-refresh');
+                  window.dispatchEvent(evt);
+                } catch {
+                  alert('שגיאת רשת');
+                }
               });
             });
           }
