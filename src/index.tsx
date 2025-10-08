@@ -431,18 +431,6 @@ app.get('/api/config/public', (c) => {
   })
 })
 
-// Debug endpoint to inspect env in runtime (temporary)
-app.get('/api/debug/env', (c) => {
-  const keys = Object.keys(c.env ?? {})
-  return c.json({
-    keys,
-    hasUrl: Boolean(c.env.PUBLIC_SUPABASE_URL),
-    hasAnon: Boolean(c.env.PUBLIC_SUPABASE_ANON_KEY),
-    hasService: Boolean(c.env.SUPABASE_SERVICE_KEY),
-    url: c.env.PUBLIC_SUPABASE_URL || null,
-    anonLen: c.env.PUBLIC_SUPABASE_ANON_KEY ? ('' + c.env.PUBLIC_SUPABASE_ANON_KEY).length : 0
-  })
-})
 
 // ------------------- API: Mock Auth (temp until Supabase) -------------------
 app.post('/api/auth/login', async (c) => {
