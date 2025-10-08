@@ -1,5 +1,7 @@
 // Tabs, counters, forms, chat, and plan purchase wiring
 (function(){
+  let supabaseDown = false;
+  const MOCK_TOKEN_KEY = 'mock_token';
   // Smooth counters
   const counters = document.querySelectorAll('[data-counter]');
   const ease = (t) => 1 - Math.pow(1 - t, 3);
@@ -118,7 +120,23 @@
     async function refreshPortal() {
       // Allow external triggers
       window.addEventListener('portal-refresh', async ()=> { await refreshPortal(); });
-      const { data: { user } } = await client.auth.getUser();
+      let user = null;
+      try {
+        const res = await client.auth.getUser();
+        user = res?.data?.user || null;
+      } catch (e) {
+        supabaseDown = true;
+      }
+      // Fallback to mock when Supabase is down
+      if (!user && supabaseDown) {
+        try {
+          const t = localStorage.getItem(MOCK_TOKEN_KEY);
+          if (t) {
+            const me = await fetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + t } }).then(r=>r.ok?r.json():null).catch(()=>null);
+            if (me && me.email) user = { id: 'mock', email: me.email };
+          }
+        } catch {}
+      }
       const modal = document.getElementById('authModal');
       if (!user) {
         portalSignedOut?.classList.remove('hidden');
@@ -148,7 +166,8 @@
         </div>`;
       const headerLogout = document.getElementById('headerLogout');
       headerLogout && headerLogout.addEventListener('click', async ()=>{
-        await client.auth.signOut();
+        try { await client.auth.signOut(); } catch {}
+        try { localStorage.removeItem(MOCK_TOKEN_KEY); } catch {}
         authStatusModal && (authStatusModal.textContent = 'התנתקת');
         await refreshPortal();
       });
@@ -263,8 +282,30 @@
     // Modal listeners (primary)
     btnLoginModal?.addEventListener('click', async () => {
       authStatusModal.textContent = 'מתחבר...';
-      const { error } = await client.auth.signInWithPassword({ email: authEmailModal.value, password: authPasswordModal.value });
-      authStatusModal.textContent = error ? ('שגיאה: ' + error.message) : 'מחובר';
+      try {
+        if (!supabaseDown) {
+          const { error } = await client.auth.signInWithPassword({ email: authEmailModal.value, password: authPasswordModal.value });
+          if (!error) { authStatusModal.textContent = 'מחובר'; await refreshPortal(); return; }
+          // if Supabase returned an error (not network), show it and stop
+          authStatusModal.textContent = 'שגיאה: ' + error.message;
+          return;
+        }
+      } catch (e) {
+        // network error – fall through to mock
+      }
+      // Mock fallback when Supabase unreachable
+      try {
+        const res = await fetch('/api/auth/login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email: authEmailModal.value, password: authPasswordModal.value }) });
+        const data = await res.json();
+        if (data && data.token) {
+          localStorage.setItem(MOCK_TOKEN_KEY, data.token);
+          authStatusModal.textContent = 'מחובר (מצב תחזוקה)';
+        } else {
+          authStatusModal.textContent = 'שגיאה בהתחברות (מצב תחזוקה)';
+        }
+      } catch {
+        authStatusModal.textContent = 'שגיאת רשת';
+      }
       await refreshPortal();
     });
     btnRegisterModal?.addEventListener('click', async () => {
@@ -279,7 +320,8 @@
       authStatusModal.textContent = error ? ('שגיאה: ' + error.message) : 'קישור איפוס נשלח לדוא"ל';
     });
     btnLogoutModal?.addEventListener('click', async () => {
-      await client.auth.signOut();
+      try { await client.auth.signOut(); } catch {}
+      try { localStorage.removeItem(MOCK_TOKEN_KEY); } catch {}
       authStatusModal.textContent = 'התנתקת';
       await refreshPortal();
     });
@@ -331,6 +373,7 @@
       const status = document.getElementById('schedulerStatus');
       status && (status.textContent = 'שומר...');
       try {
+        if (supabaseDown) { status && (status.textContent = 'שירות נתונים לא זמין זמנית'); return; }
         const client = await supa();
         if (!client) { status && (status.textContent = 'שגיאת חיבור'); return; }
         const { data: { user } } = await client.auth.getUser();
