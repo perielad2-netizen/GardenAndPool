@@ -1,6 +1,7 @@
 // Tabs, counters, forms, chat, and plan purchase wiring
 (function(){
   let supabaseDown = false;
+  let allowMockAuth = false;
   const MOCK_TOKEN_KEY = 'mock_token';
   // Smooth counters
   const counters = document.querySelectorAll('[data-counter]');
@@ -71,6 +72,7 @@
     try {
       const res = await fetch('/api/config/env');
       const cfg = await res.json();
+      allowMockAuth = Boolean(cfg?.features?.mockAuthFallback);
       const url = cfg?.supabase?.url;
       const anon = cfg?.supabase?.anon;
       if (!url || !anon || !window.supabase) return null;
@@ -127,8 +129,8 @@
       } catch (e) {
         supabaseDown = true;
       }
-      // Fallback to mock when Supabase is down
-      if (!user && supabaseDown) {
+      // Fallback to mock only if explicitly allowed
+      if (!user && supabaseDown && allowMockAuth) {
         try {
           const t = localStorage.getItem(MOCK_TOKEN_KEY);
           if (t) {
@@ -291,9 +293,13 @@
           return;
         }
       } catch (e) {
-        // network error – fall through to mock
+        // network error – handled below
       }
-      // Mock fallback when Supabase unreachable
+      if (!allowMockAuth) {
+        authStatusModal.textContent = 'שירות התחברות אינו זמין זמנית. נסה/י שוב בעוד מספר דקות.';
+        return;
+      }
+      // Mock fallback when allowed explicitly
       try {
         const res = await fetch('/api/auth/login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email: authEmailModal.value, password: authPasswordModal.value }) });
         const data = await res.json();

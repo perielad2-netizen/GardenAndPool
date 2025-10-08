@@ -421,7 +421,8 @@ app.get('/api/config/env', (c) => {
     },
     features: {
       aiEnabled: Boolean(c.env.OPENAI_API_KEY),
-      stripeEnabled: Boolean(c.env.STRIPE_SECRET_KEY)
+      stripeEnabled: Boolean(c.env.STRIPE_SECRET_KEY),
+      mockAuthFallback: false
     }
   })
 })
@@ -437,7 +438,8 @@ app.get('/api/config/public', (c) => {
     },
     features: {
       aiEnabled: Boolean(c.env.OPENAI_API_KEY),
-      stripeEnabled: Boolean(c.env.STRIPE_SECRET_KEY)
+      stripeEnabled: Boolean(c.env.STRIPE_SECRET_KEY),
+      mockAuthFallback: false
     }
   })
 })
