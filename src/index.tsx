@@ -277,16 +277,7 @@ app.get('/', (c) => {
       <section id="portal" className="bg-white">
         <div className="max-w-5xl mx-auto px-4 py-10">
           <h2 className="text-2xl font-bold mb-6">הפורטל שלי</h2>
-          <div className="grid gap-4">
-            <div className="rounded-2xl border bg-white p-5 shadow-sm">
-              <div className="font-semibold mb-2">התחברות</div>
-              <div className="text-sm text-slate-600">השתמש/י בטופס ההתחברות תחת שירותים → התחברות / הרשמה</div>
-            </div>
-            <div className="rounded-2xl border bg-white p-5 shadow-sm">
-              <div className="font-semibold mb-2">סטטוס</div>
-              <div id="portalSummary" className="text-sm text-slate-700">טרם מחובר/ת</div>
-            </div>
-          </div>
+          
         </div>
       </section>
 
