@@ -445,15 +445,28 @@ app.get('/', (c) => {
         <div className="absolute inset-x-4 bottom-8 sm:inset-0 sm:m-auto sm:max-w-md">
           <div className="rounded-2xl bg-white shadow-xl p-5">
             <div className="font-bold mb-2">התחברות / הרשמה</div>
+            {/* Tabs header */}
+            <div className="flex items-center gap-2 mb-3 text-sm">
+              <button id="authTabLogin" className="px-3 py-2 rounded-lg border bg-slate-100 text-slate-800">התחברות</button>
+              <button id="authTabRegister" className="px-3 py-2 rounded-lg border text-slate-700">הרשמה</button>
+            </div>
+            {/* Shared fields */}
             <div className="grid gap-3">
               <input id="authEmailModal" type="email" placeholder="דוא&quot;ל" className="border rounded-lg px-3 py-2" />
               <input id="authPasswordModal" type="password" placeholder="סיסמה" className="border rounded-lg px-3 py-2" />
-              <div className="flex gap-2">
+
+              {/* Login actions */}
+              <div id="authLoginActions" className="flex gap-2">
                 <button id="btnLoginModal" className="btn btn-primary">התחבר</button>
-                <button id="btnRegisterModal" className="btn">הירשם</button>
                 <button id="btnResetModal" className="btn">איפוס סיסמה</button>
-                <button id="btnLogoutModal" className="btn hidden">התנתק</button>
               </div>
+
+              {/* Register actions */}
+              <div id="authRegisterActions" className="flex gap-2 hidden">
+                <button id="btnRegisterModal" className="btn">הירשם</button>
+              </div>
+
+              <button id="btnLogoutModal" className="btn hidden">התנתק</button>
               <div id="authStatusModal" className="text-sm text-slate-600"></div>
             </div>
             <div className="mt-4 text-left">

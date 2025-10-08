@@ -89,6 +89,20 @@
     const close = document.getElementById('authModalClose');
     close && close.addEventListener('click', ()=> modal.classList.add('hidden'));
     modal.addEventListener('click', (e)=>{ if (e.target === modal) modal.classList.add('hidden'); });
+
+    // Default to Login tab on open
+    try {
+      const tabLogin = document.getElementById('authTabLogin');
+      const tabRegister = document.getElementById('authTabRegister');
+      const loginActions = document.getElementById('authLoginActions');
+      const registerActions = document.getElementById('authRegisterActions');
+      if (tabLogin && tabRegister && loginActions && registerActions) {
+        tabLogin.classList.add('bg-slate-100');
+        tabRegister.classList.remove('bg-slate-100');
+        loginActions.classList.remove('hidden');
+        registerActions.classList.add('hidden');
+      }
+    } catch {}
   }
   const openAuthBtn = document.getElementById('openAuthModal');
   if (openAuthBtn) openAuthBtn.addEventListener('click', (e)=>{ e.preventDefault(); openAuthModal(); });
@@ -105,6 +119,10 @@
     const btnResetModal = document.getElementById('btnResetModal');
     const btnLogoutModal = document.getElementById('btnLogoutModal');
     const authStatusModal = document.getElementById('authStatusModal');
+    const tabLogin = document.getElementById('authTabLogin');
+    const tabRegister = document.getElementById('authTabRegister');
+    const loginActions = document.getElementById('authLoginActions');
+    const registerActions = document.getElementById('authRegisterActions');
 
     const portalSignedOut = document.getElementById('portalSignedOut');
     const portalContent = document.getElementById('portalContent');
@@ -410,6 +428,25 @@
       authStatusModal.textContent = 'התנתקת';
       await refreshPortal();
     });
+
+    // Tabs switching
+    function switchTab(which){
+      if (!tabLogin || !tabRegister || !loginActions || !registerActions) return;
+      if (which === 'login') {
+        tabLogin.classList.add('bg-slate-100');
+        tabRegister.classList.remove('bg-slate-100');
+        loginActions.classList.remove('hidden');
+        registerActions.classList.add('hidden');
+      } else {
+        tabRegister.classList.add('bg-slate-100');
+        tabLogin.classList.remove('bg-slate-100');
+        registerActions.classList.remove('hidden');
+        loginActions.classList.add('hidden');
+      }
+      authStatusModal && (authStatusModal.textContent = '');
+    }
+    tabLogin && tabLogin.addEventListener('click', ()=> switchTab('login'));
+    tabRegister && tabRegister.addEventListener('click', ()=> switchTab('register'));
 
     // On load, refresh
     await refreshPortal();
