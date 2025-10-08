@@ -1,6 +1,10 @@
 /* Base water theme, Hebrew RTL ready */
 html[dir="rtl"] body { direction: rtl; }
 
+/* Reveal on-scroll animation (vertical build-in) */
+.reveal { opacity: 0; transform: translateY(16px); transition: opacity .35s ease, transform .35s ease; }
+.reveal.in-view { opacity: 1; transform: none; }
+
 /* Smooth vertical snapping on mobile/tablet */
 @media (max-width: 768px) {
   html { scroll-behavior: smooth; }

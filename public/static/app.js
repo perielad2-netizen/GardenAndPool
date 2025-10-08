@@ -663,6 +663,28 @@
   if (chatSend) chatSend.addEventListener('click', sendChat);
   if (chatInput) chatInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendChat(); });
 
+  // IntersectionObserver for vertical entrance animation
+  (function initReveal(){
+    try {
+      const els = document.querySelectorAll('.reveal');
+      if (!('IntersectionObserver' in window) || !els || els.length === 0) {
+        // If not supported, show immediately
+        els.forEach(el => el.classList.add('in-view'));
+        return;
+      }
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in-view');
+            // Optional: unobserve after first reveal for performance
+            io.unobserve(entry.target);
+          }
+        });
+      }, { root: null, rootMargin: '0px 0px -10% 0px', threshold: 0.1 });
+      els.forEach(el => io.observe(el));
+    } catch {}
+  })();
+
   // Collapsible plan cards (מנויים)
   (function initPlanToggles(){
     const toggles = document.querySelectorAll('[data-plan-toggle]');

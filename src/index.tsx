@@ -57,7 +57,7 @@ app.get('/', (c) => {
         </div>
       </header>
 
-      <section className="relative overflow-hidden snap-start">
+      <section className="relative overflow-hidden snap-start reveal">
         <div className="absolute inset-0 -z-10">
           <div className="absolute -top-32 -left-32 w-72 h-72 bg-white/20 rounded-full blur-3xl"></div>
           <div className="absolute top-1/2 right-0 w-96 h-96 bg-cyan-200/30 rounded-full blur-3xl"></div>
@@ -93,7 +93,7 @@ app.get('/', (c) => {
         </div>
       </section>
 
-      <section id="services" className="bg-white/60 backdrop-blur rounded-t-3xl -mt-2 snap-start">
+      <section id="services" className="bg-white/60 backdrop-blur rounded-t-3xl -mt-2 snap-start reveal">
         <div className="max-w-5xl mx-auto px-4 py-10">
           <h2 className="text-2xl font-bold mb-6">שירותים</h2>
 
@@ -353,7 +353,7 @@ app.get('/', (c) => {
       </section>
 
 
-      <section id="plans" className="bg-white snap-start">
+      <section id="plans" className="bg-white snap-start reveal">
         <div className="max-w-5xl mx-auto px-4 py-10">
           <h2 className="text-2xl font-bold mb-6">מנויים</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-2 gap-4">
@@ -461,7 +461,7 @@ app.get('/', (c) => {
         </div>
       </section>
 
-      <footer id="contact" className="bg-slate-900 text-white snap-start">
+      <footer id="contact" className="bg-slate-900 text-white snap-start reveal">
         <div className="max-w-5xl mx-auto px-4 py-8 grid sm:grid-cols-3 gap-6">
           <div>
             <div className="font-bold mb-2">צור קשר</div>
