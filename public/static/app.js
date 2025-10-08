@@ -242,8 +242,21 @@
         `).join('');
       }
 
-      const appts = await client.rpc('get_upcoming_appointments_for_user', { p_user: uid }).catch(() => ({ data: null }));
-      let list = Array.isArray(appts?.data) && appts.data.length > 0 ? appts.data : null;
+      // Prefer server-side list to avoid client RLS issues
+      let list = null;
+      try {
+        const sess = await client.auth.getSession();
+        const jwt = sess?.data?.session?.access_token;
+        if (jwt) {
+          const resp = await fetch('/api/portal/appointments', { headers: { 'Authorization': 'Bearer ' + jwt } });
+          const j = await resp.json();
+          if (resp.ok && Array.isArray(j?.data)) list = j.data;
+        }
+      } catch {}
+      if (!list) {
+        const appts = await client.rpc('get_upcoming_appointments_for_user', { p_user: uid }).catch(() => ({ data: null }));
+        list = Array.isArray(appts?.data) && appts.data.length > 0 ? appts.data : null;
+      }
       if (!list) {
         const a = await client
           .from('appointments')

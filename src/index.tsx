@@ -444,6 +444,7 @@ app.get('/api/debug/env', (c) => {
     keys,
     hasUrl: Boolean(c.env.PUBLIC_SUPABASE_URL),
     hasAnon: Boolean(c.env.PUBLIC_SUPABASE_ANON_KEY),
+    hasService: Boolean(c.env.SUPABASE_SERVICE_KEY),
     url: c.env.PUBLIC_SUPABASE_URL || null,
     anonLen: c.env.PUBLIC_SUPABASE_ANON_KEY ? ('' + c.env.PUBLIC_SUPABASE_ANON_KEY).length : 0
   })
@@ -594,6 +595,41 @@ app.post('/api/schedule/check', async (c) => {
     const list = await resp.json<any[]>()
     if (Array.isArray(list) && list.length > 0) return c.json({ ok: false, conflict: true }, 409)
     return c.json({ ok: true, conflict: false })
+  } catch (e) {
+    return c.json({ error: 'server_error' }, 500)
+  }
+})
+
+// ------------------- API: Portal - list appointments for logged-in user (server-side via Supabase Auth) -------------------
+app.get('/api/portal/appointments', async (c) => {
+  try {
+    const url = c.env.PUBLIC_SUPABASE_URL
+    const key = c.env.SUPABASE_SERVICE_KEY
+    const auth = c.req.header('authorization') || ''
+    if (!url || !key) return c.json({ error: 'not_configured' }, 501)
+    if (!auth.startsWith('Bearer ')) return c.json({ error: 'unauthorized' }, 401)
+
+    // Validate token and get user id from Supabase Auth
+    const u = await fetch(`${url.replace(/\/?$/, '')}/auth/v1/user`, {
+      headers: { 'apikey': key, 'Authorization': auth }
+    })
+    if (!u.ok) return c.json({ error: 'unauthorized' }, 401)
+    const user = await u.json<any>()
+    const uid = user?.id
+    if (!uid) return c.json({ error: 'no_user' }, 401)
+
+    // Query appointments for this user (service role bypasses RLS but we restrict by uid)
+    const q = `${url.replace(/\/?$/, '')}/rest/v1/appointments?select=*` +
+      `&user_id=eq.${encodeURIComponent(uid)}` +
+      `&order=window_start.asc` +
+      `&limit=10`
+    const r = await fetch(q, { headers: { 'apikey': key, 'Authorization': `Bearer ${key}`, 'Accept': 'application/json' } })
+    if (!r.ok) {
+      const txt = await r.text();
+      return c.json({ error: 'supabase_error', detail: txt }, 502)
+    }
+    const list = await r.json<any[]>()
+    return c.json({ data: list || [] })
   } catch (e) {
     return c.json({ error: 'server_error' }, 500)
   }
