@@ -54,7 +54,7 @@ app.get('/', (c) => {
               <a href="#contact" className="hover:text-white transition">צור קשר</a>
             </nav>
             <div id="headerAuthZone">
-              <a href="#auth" id="openAuthModal" className="btn btn-cta-header text-[12px] sm:text-sm px-2 py-1 sm:px-3 sm:py-2">
+              <a href="#auth" id="openAuthModal" className="btn btn-cta-header text-[11px] sm:text-sm px-2 py-[2px] sm:px-3 sm:py-2">
                 <i className="fas fa-user-lock"></i>
                 התחברות / הרשמה
               </a>
