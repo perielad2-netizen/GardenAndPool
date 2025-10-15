@@ -34,6 +34,11 @@ html[dir="rtl"] body { direction: rtl; }
   color: #fff;
 }
 
+/* Header brand emphasis */
+.header-brand-glow {
+  text-shadow: 0 2px 8px rgba(255,255,255,0.35), 0 4px 18px rgba(34,211,238,0.25);
+}
+
 /* Subtle wave gradient animation */
 .water-gradient {
   background: linear-gradient(180deg, #3B82F6 0%, #06B6D4 50%, #3B82F6 100%);
