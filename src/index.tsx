@@ -32,16 +32,13 @@ app.get('/', (c) => {
       <header className="sticky top-0 z-30 backdrop-blur bg-white/10 border-b border-white/20">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-white/30 shadow-inner flex items-center justify-center text-white">
-              <i className="fas fa-water text-lg"></i>
-            </div>
             <div className="leading-tight">
               <div className="font-extrabold tracking-tight drop-shadow-md header-brand-glow text-3xl sm:text-4xl text-white">
                 מים
                 <span className="bg-gradient-to-r from-cyan-200 to-emerald-300 bg-clip-text text-transparent"> וטבע</span>
               </div>
               <div className="brand-underline mt-1 mb-1"></div>
-              <div className="text-white/90 text-sm sm:text-base leading-tight bg-white/10 rounded-md px-2 py-0.5 inline-block">
+              <div className="text-white/95 text-base sm:text-lg leading-tight bg-white/10 rounded-md px-2.5 py-1 inline-block font-medium">
                 שירותי בריכות, גינון ונקיון מקצועי
               </div>
             </div>
