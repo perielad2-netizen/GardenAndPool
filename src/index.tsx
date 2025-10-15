@@ -36,11 +36,12 @@ app.get('/', (c) => {
               <i className="fas fa-water text-lg"></i>
             </div>
             <div className="leading-tight">
-              <div className="font-extrabold tracking-tight drop-shadow-md header-brand-glow text-2xl sm:text-3xl text-white">
+              <div className="font-extrabold tracking-tight drop-shadow-md header-brand-glow text-3xl sm:text-4xl text-white">
                 מים
                 <span className="bg-gradient-to-r from-cyan-200 to-emerald-300 bg-clip-text text-transparent"> וטבע</span>
               </div>
-              <div className="text-white/90 text-sm sm:text-base leading-tight bg-white/10 rounded-md px-2 py-0.5 inline-block mt-0.5">
+              <div className="brand-underline mt-1 mb-1"></div>
+              <div className="text-white/90 text-sm sm:text-base leading-tight bg-white/10 rounded-md px-2 py-0.5 inline-block">
                 שירותי בריכות, גינון ונקיון מקצועי
               </div>
             </div>
@@ -53,7 +54,7 @@ app.get('/', (c) => {
               <a href="#contact" className="hover:text-white transition">צור קשר</a>
             </nav>
             <div id="headerAuthZone">
-              <a href="#auth" id="openAuthModal" className="btn btn-cta-header">
+              <a href="#auth" id="openAuthModal" className="btn btn-cta-header text-[12px] sm:text-sm px-2 py-1 sm:px-3 sm:py-2">
                 <i className="fas fa-user-lock"></i>
                 התחברות / הרשמה
               </a>

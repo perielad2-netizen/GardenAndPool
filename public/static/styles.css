@@ -38,6 +38,13 @@ html[dir="rtl"] body { direction: rtl; }
 .header-brand-glow {
   text-shadow: 0 2px 8px rgba(255,255,255,0.35), 0 4px 18px rgba(34,211,238,0.25);
 }
+/* Gradient underline under the brand */
+.brand-underline {
+  height: 3px;
+  width: 100%;
+  background: linear-gradient(90deg, rgba(34,211,238,0.0) 0%, rgba(34,211,238,0.6) 15%, rgba(52,211,153,0.6) 85%, rgba(52,211,153,0.0) 100%);
+  border-radius: 9999px;
+}
 
 /* Subtle wave gradient animation */
 .water-gradient {
