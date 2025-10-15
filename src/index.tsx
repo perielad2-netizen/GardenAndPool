@@ -35,7 +35,7 @@ app.get('/', (c) => {
             <div className="leading-tight">
               <div className="font-extrabold tracking-tight drop-shadow-md header-brand-glow text-3xl sm:text-4xl text-white">
                 מים
-                <span className="bg-gradient-to-r from-cyan-200 to-emerald-300 bg-clip-text text-transparent"> וטבע</span>
+                <span className="bg-gradient-to-r from-lime-300 to-emerald-500 bg-clip-text text-transparent"> וטבע</span>
               </div>
               <div className="brand-underline mt-1 mb-1"></div>
               <div className="text-white/95 text-base sm:text-lg leading-tight bg-white/10 rounded-md px-2.5 py-1 inline-block font-medium">

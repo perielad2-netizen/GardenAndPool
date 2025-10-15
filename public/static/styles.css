@@ -42,7 +42,7 @@ html[dir="rtl"] body { direction: rtl; }
 .brand-underline {
   height: 3px;
   width: 100%;
-  background: linear-gradient(90deg, rgba(34,211,238,0.0) 0%, rgba(34,211,238,0.6) 15%, rgba(52,211,153,0.6) 85%, rgba(52,211,153,0.0) 100%);
+  background: linear-gradient(90deg, rgba(132,204,22,0.00) 0%, rgba(132,204,22,0.65) 15%, rgba(16,185,129,0.70) 85%, rgba(16,185,129,0.00) 100%);
   background-size: 200% 100%;
   animation: brandPulse 9s ease-in-out infinite;
   border-radius: 9999px;
