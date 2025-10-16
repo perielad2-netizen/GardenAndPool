@@ -80,7 +80,7 @@ app.get('/', (c) => {
               <i className="fas fa-camera"></i>
               אבחון מהיר
             </a>
-            <a href="tel:0500000000" className="btn btn-cta-secondary">
+            <a href="tel:0509379370" className="btn btn-cta-secondary">
               <i className="fas fa-phone"></i>
               התקשר עכשיו
             </a>
@@ -512,7 +512,7 @@ app.get('/', (c) => {
         <div className="max-w-5xl mx-auto px-4 py-8 grid sm:grid-cols-3 gap-6">
           <div>
             <div className="font-bold mb-2">צור קשר</div>
-            <div className="text-sm text-white/80">טלפון: 050-0000000</div>
+            <div className="text-sm text-white/80">טלפון: 0509379370</div>
             <div className="text-sm text-white/80">דוא"ל: info@wat-nature.co.il</div>
           </div>
           <div>
@@ -608,7 +608,7 @@ app.get('/', (c) => {
                 <span className="nav-icon w-10 h-10 grid place-items-center rounded-xl bg-blue-50 text-blue-600"><i className="fas fa-id-badge"></i></span>
                 <span className="text-[11px] leading-none">הפורטל</span>
               </button>
-              <a href="tel:0500000000" className="flex flex-col items-center gap-1 text-slate-700">
+              <a href="tel:0509379370" className="flex flex-col items-center gap-1 text-slate-700">
                 <span className="nav-icon w-10 h-10 grid place-items-center rounded-xl bg-blue-50 text-blue-600"><i className="fas fa-phone"></i></span>
                 <span className="text-[11px] leading-none">שיחה</span>
               </a>
