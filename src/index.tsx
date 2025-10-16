@@ -87,13 +87,15 @@ app.get('/', (c) => {
           </div>
 
           <div className="mt-8 grid grid-cols-3 gap-3 text-center">
-            <div className="pill text-slate-800">
-              <div className="text-2xl font-bold" data-counter data-target="10">0</div>
-              <div className="text-sm">מעל 10 שנות ניסיון</div>
+            <div className="pill text-slate-800 text-center">
+              <div className="text-xs text-slate-600">מעל</div>
+              <div className="text-3xl font-extrabold" data-counter data-target="10">0</div>
+              <div className="text-xs text-slate-600">שנות ניסיון</div>
             </div>
-            <div className="pill text-slate-800">
-              <div className="text-2xl font-bold" data-counter data-target="500">0</div>
-              <div className="text-sm">יותר מ 500 לקוחות מרוצים</div>
+            <div className="pill text-slate-800 text-center">
+              <div className="text-xs text-slate-600">מעל</div>
+              <div className="text-3xl font-extrabold" data-counter data-target="500">0</div>
+              <div className="text-xs text-slate-600">לקוחות מרוצים</div>
             </div>
             <div className="pill text-slate-800">
               <div className="text-2xl font-bold">24/7</div>
