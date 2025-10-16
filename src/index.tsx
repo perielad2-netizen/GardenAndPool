@@ -192,6 +192,41 @@ app.get('/', (c) => {
               <p className="text-sm text-slate-600 mb-3">מעקב אחר חומרים, כלים וחלקי חילוף לתחזוקה שוטפת.</p>
               <div id="cabinetSignedOut" className="text-sm text-slate-600">יש להתחבר כדי לצפות ולהתעדכן.</div>
               <div id="cabinetApp" className="hidden">
+                {/* Add item form */}
+                <form id="cabinetAddForm" className="grid sm:grid-cols-4 gap-2 mb-3 items-end">
+                  <div>
+                    <label className="text-xs text-slate-600">שם פריט</label>
+                    <input id="cab_name" className="border rounded-lg px-3 py-2 w-full" placeholder="לדוגמה: כלור גרגירים" />
+                  </div>
+                  <div>
+                    <label className="text-xs text-slate-600">קטגוריה</label>
+                    <select id="cab_type" className="border rounded-lg px-3 py-2 w-full">
+                      <option value="chemicals">כימיקלים</option>
+                      <option value="tools">כלים</option>
+                      <option value="parts">חלקים</option>
+                    </select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-xs text-slate-600">מינימום</label>
+                      <input id="cab_min" type="number" min="0" step="0.01" className="border rounded-lg px-3 py-2 w-full" placeholder="0" />
+                    </div>
+                    <div>
+                      <label className="text-xs text-slate-600">יחידה</label>
+                      <select id="cab_unit" className="border rounded-lg px-3 py-2 w-full">
+                        <option value="גרם">גרם</option>
+                        <option value="ק&quot;ג">ק&quot;ג</option>
+                        <option value="ליטר">ליטר</option>
+                        <option value="סמ&quot;ק">סמ&quot;ק</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button type="submit" className="btn btn-primary whitespace-nowrap"><i className="fas fa-plus"></i> הוסף פריט</button>
+                    <span id="cab_add_status" className="text-xs text-slate-600"></span>
+                  </div>
+                </form>
+
                 <div id="cabinetAlerts" className="mb-3"></div>
                 <div className="flex items-center gap-2 mb-3 text-sm">
                   <button data-cabinet-filter="all" className="btn">הכל</button>

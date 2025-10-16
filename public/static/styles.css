@@ -28,6 +28,17 @@ html[dir="rtl"] body { direction: rtl; }
   box-shadow: 0 6px 18px rgba(2, 132, 199, 0.15);
 }
 
+/* Cabinet filter active state */
+[data-cabinet-filter].active {
+  background: #1e3a8a;
+  color: #fff;
+  border-color: #1e3a8a;
+}
+[data-cabinet-filter] {
+  background:#ffffff; border:1px solid #e5e7eb;
+}
+[data-cabinet-filter]:hover { box-shadow: 0 6px 18px rgba(2,132,199,.10); transform: translateY(-1px); }
+
 /* Bottom nav active styling */
 #bottomNav .nav-icon.active {
   background: #1e40af;
@@ -145,7 +156,7 @@ html[dir="rtl"] body { direction: rtl; }
 
 /* Progress bar */
 .progress { height:8px; background:#e5e7eb; border-radius:9999px; overflow:hidden; }
-.progress > span { display:block; height:100%; background:#60a5fa; }
+.progress > span { display:block; height:100%; background:linear-gradient(90deg,#60a5fa,#22d3ee); }
 
 /* Alerts */
 .alert { border-radius:1rem; border:1px solid #fde68a; background:#fffbeb; padding:.75rem 1rem; }

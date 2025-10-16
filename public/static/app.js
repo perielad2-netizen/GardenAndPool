@@ -759,29 +759,24 @@
     const client = await (typeof supa === 'function' ? supa() : null);
     if (!client) return;
 
-    const sess = await client.auth.getSession();
-    const uid = sess?.data?.session?.user?.id;
-    if (!uid) { signedOutEl?.classList.remove('hidden'); appEl?.classList.add('hidden'); return; }
-    signedOutEl?.classList.add('hidden'); appEl?.classList.remove('hidden');
-
-    // Listen to auth changes to keep cabinet in sync with login/logout
-    try {
-      window.addEventListener('cabinet-refresh', async () => {
-        try {
-          const s = await client.auth.getSession();
-          const uidNow = s?.data?.session?.user?.id;
-          if (!uidNow) {
-            signedOutEl?.classList.remove('hidden');
-            appEl?.classList.add('hidden');
-            listEl.innerHTML = '';
-            return;
-          }
-          signedOutEl?.classList.add('hidden');
-          appEl?.classList.remove('hidden');
-          await load();
-        } catch {}
-      });
-    } catch {}
+    // Ensure cabinet reacts to auth changes and initial state
+    async function ensureAuthAndLoad(){
+      try {
+        const s = await client.auth.getSession();
+        const uidNow = s?.data?.session?.user?.id;
+        if (!uidNow) {
+          signedOutEl?.classList.remove('hidden');
+          appEl?.classList.add('hidden');
+          if (listEl) listEl.innerHTML = '';
+          return;
+        }
+        signedOutEl?.classList.add('hidden');
+        appEl?.classList.remove('hidden');
+        await load();
+      } catch {}
+    }
+    try { window.addEventListener('cabinet-refresh', ensureAuthAndLoad); } catch {}
+    await ensureAuthAndLoad();
 
     // Add item form wiring
     const addForm = document.getElementById('cabinetAddForm');
@@ -795,17 +790,22 @@
         e.preventDefault();
         const name = (nameEl?.value || '').trim();
         const category = (typeEl?.value || 'chemicals');
-        const unit = (unitEl?.value || 'יח׳').trim() || 'יח׳';
+        const unit = (unitEl?.value || 'גרם').trim() || 'גרם';
         const min = parseFloat((minEl?.value || '0'));
         if (!name) { if (statusEl) statusEl.textContent = 'נא להזין שם פריט'; return; }
         try {
+          const s2 = await client.auth.getSession();
+          const uidNow = s2?.data?.session?.user?.id;
+          if (!uidNow) { if (statusEl) statusEl.textContent = 'יש להתחבר'; return; }
+          const slug = name.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_\u0590-\u05FF-]/gi,'').slice(0,24);
+          const key = `itm_${slug}_${Math.random().toString(36).slice(2,7)}`;
           const { data, error } = await client
             .from('pool_cabinet_items')
-            .insert([{ user_id: uid, name, category, unit, qty: 0, min_qty: isNaN(min)?0:min, notes: null }])
+            .insert([{ user_id: uidNow, key, name, category, unit, qty: 0, min_qty: isNaN(min)?0:min, notes: null }])
             .select()
             .single();
           if (statusEl) statusEl.textContent = error ? ('שגיאה: ' + error.message) : 'נוסף';
-          if (!error) { if (nameEl) nameEl.value=''; if (minEl) minEl.value=''; if (unitEl) unitEl.value=''; await load(); }
+          if (!error) { if (nameEl) nameEl.value=''; if (minEl) minEl.value=''; if (unitEl) unitEl.value='גרם'; await ensureAuthAndLoad(); }
         } catch { if (statusEl) statusEl.textContent = 'שגיאת רשת'; }
       });
     }
@@ -814,17 +814,19 @@
 
     async function save(item){
       try {
+        const identifier = (item && (item.id ?? item.key));
+        const column = (item && (item.id !== undefined && item.id !== null)) ? 'id' : 'key';
         await client
           .from('pool_cabinet_items')
           .update({
             name: item.name,
             category: item.category,
-            unit: item.unit || 'unit',
+            unit: item.unit || 'גרם',
             qty: item.qty,
             min_qty: item.min_qty,
             notes: item.notes || null
           })
-          .eq('id', item.id);
+          .eq(column, identifier);
       } catch {}
     }
 
@@ -855,7 +857,7 @@
       const alertsEl = document.getElementById('cabinetAlerts');
       if (!alertsEl) return;
       const missing = items.filter(i => (i.qty||0) <= 0);
-      const low = items.filter(i => (i.qty||0) > 0 && (i.qty||0) < (i.threshold||0));
+      const low = items.filter(i => (i.qty||0) > 0 && (i.qty||0) < (i.min_qty||0));
       if (missing.length===0 && low.length===0) { alertsEl.innerHTML = ''; return; }
       alertsEl.innerHTML = `
         <div class="alert">
@@ -876,7 +878,7 @@
               <div class="text-xs text-slate-500 flex items-center gap-2">${badgeFor(it)}
                 <span>מלאי נוכחי: <b>${it.qty}</b> ${it.unit || ''}</span>
                 <span>מינימום:</span>
-                <input class="border rounded px-2 py-1 text-xs w-16" type="number" min="0" step="0.01" value="${it.min_qty || 0}" data-thr="${it.id}" />
+                <input class="border rounded px-2 py-1 text-xs w-16" type="number" min="0" step="0.01" value="${it.min_qty || 0}" data-thr="${it.id ?? it.key}" />
               </div>
             </div>
             <div>${levelTag(it)}</div>
@@ -885,21 +887,22 @@
             <div class="progress"><span style="width:${pct(it)}%;"></span></div>
           </div>
           <div class="mt-2 flex items-center gap-2">
-            <button class="btn" data-dec="${it.id}">-</button>
-            <span class="text-sm w-10 text-center" data-qty="${it.id}">${it.qty}</span>
-            <button class="btn" data-inc="${it.id}">+</button>
-            ${ (it.qty||0) < (it.min_qty||0) ? `<button class="btn btn-accent ml-auto" data-order="${it.id}">הזן הזמנה</button>` : `` }
+            <button class="btn" data-dec="${it.id ?? it.key}">-</button>
+            <span class="text-sm w-10 text-center" data-qty="${it.id ?? it.key}">${it.qty}</span>
+            <button class="btn" data-inc="${it.id ?? it.key}">+</button>
+            ${ (it.qty||0) < (it.min_qty||0) ? `<button class="btn btn-accent ml-auto" data-order="${it.id ?? it.key}">הזן הזמנה</button>` : `` }
           </div>
         </div>
       `).join('');
 
       // Wire inc/dec/order/threshold
       items.forEach(it => {
-        const dec = listEl.querySelector(`[data-dec="${it.id}"]`);
-        const inc = listEl.querySelector(`[data-inc="${it.id}"]`);
-        const qEl = listEl.querySelector(`[data-qty="${it.id}"]`);
-        const order = listEl.querySelector(`[data-order="${it.id}"]`);
-        const thr = listEl.querySelector(`[data-thr="${it.id}"]`);
+        const idKey = (it.id ?? it.key);
+        const dec = listEl.querySelector(`[data-dec="${idKey}"]`);
+        const inc = listEl.querySelector(`[data-inc="${idKey}"]`);
+        const qEl = listEl.querySelector(`[data-qty="${idKey}"]`);
+        const order = listEl.querySelector(`[data-order="${idKey}"]`);
+        const thr = listEl.querySelector(`[data-thr="${idKey}"]`);
         dec?.addEventListener('click', async ()=>{ it.qty = Math.max(0, (it.qty||0)-1); if (qEl) qEl.textContent = it.qty; await save(it); load(); });
         inc?.addEventListener('click', async ()=>{ it.qty = (it.qty||0)+1; if (qEl) qEl.textContent = it.qty; await save(it); load(); });
         order?.addEventListener('click', ()=>{ alert('Order creation (demo).'); });
@@ -910,23 +913,41 @@
     async function load(){
       let rows = [];
       try {
-        const { data } = await client.from('pool_cabinet_items').select('*').eq('user_id', uid);
+        const s = await client.auth.getSession();
+        const uidNow = s?.data?.session?.user?.id;
+        if (!uidNow) { render([]); return; }
+        const { data } = await client.from('pool_cabinet_items').select('*').eq('user_id', uidNow);
         rows = Array.isArray(data) ? data : [];
       } catch { rows = []; }
       render(rows);
     }
 
-    // Filter buttons
+    // Filter buttons with active state
+    function setActiveCabinetFilter(type){
+      document.querySelectorAll('[data-cabinet-filter]').forEach(b => {
+        const t = b.getAttribute('data-cabinet-filter');
+        if (t === type) b.classList.add('active'); else b.classList.remove('active');
+      });
+    }
     document.querySelectorAll('[data-cabinet-filter]').forEach(btn => {
       btn.addEventListener('click', async ()=>{
         const type = btn.getAttribute('data-cabinet-filter');
+        setActiveCabinetFilter(type || 'all');
         let rows = [];
-        try { const { data } = await client.from('pool_cabinet_items').select('*').eq('user_id', uid); rows = Array.isArray(data) ? data : []; } catch {}
+        try {
+          const s = await client.auth.getSession();
+          const uidNow = s?.data?.session?.user?.id;
+          if (uidNow) {
+            const { data } = await client.from('pool_cabinet_items').select('*').eq('user_id', uidNow);
+            rows = Array.isArray(data) ? data : [];
+          }
+        } catch {}
         const filtered = type === 'all' ? rows : rows.filter(i => i.category === type);
         render(filtered);
       });
     });
 
+    setActiveCabinetFilter('all');
     await load();
   })();
 })();
