@@ -31,7 +31,7 @@ app.get('/', (c) => {
     <main className="pb-24 sm:pb-0 page-snap-y">
       <header className="sticky top-0 z-30 backdrop-blur bg-white/10 border-b border-white/20">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <div className="leading-tight">
               <div className="font-extrabold tracking-tight drop-shadow-md header-brand-glow text-3xl sm:text-4xl text-white">
                 מים
@@ -43,15 +43,15 @@ app.get('/', (c) => {
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <nav className="hidden sm:flex items-center gap-5 text-white/90 text-sm">
               <a href="#services" className="hover:text-white transition">שירותים</a>
               <a href="#plans" className="hover:text-white transition">מנויים</a>
               <a href="#portal" className="hover:text-white transition">הפורטל שלי</a>
               <a href="#contact" className="hover:text-white transition">צור קשר</a>
             </nav>
-            <div id="headerAuthZone">
-              <a href="#auth" id="openAuthModal" className="btn btn-cta-header text-[11px] sm:text-sm px-2 py-[2px] sm:px-3 sm:py-2">
+            <div id="headerAuthZone" className="mt-1 sm:mt-0">
+              <a href="#auth" id="openAuthModal" className="btn btn-cta-header text-[11px] sm:text-sm px-2 py-[4px] sm:px-3 sm:py-2">
                 <i className="fas fa-user-lock"></i>
                 התחברות / הרשמה
               </a>
@@ -66,9 +66,19 @@ app.get('/', (c) => {
           <div className="absolute top-1/2 right-0 w-96 h-96 bg-cyan-200/30 rounded-full blur-3xl"></div>
         </div>
         <div className="max-w-5xl mx-auto px-4 py-10">
-          <h1 className="text-[2rem] sm:text-[2.6rem] font-extrabold text-white drop-shadow-sm mb-2">הכל במקום אחד</h1>
-          <p className="text-white/90 mb-6">בריכות • גינון • ניקיון — פתרון מקצועי ומיידי.</p>
-          <div className="flex gap-3">
+          {/* Hebrew headline with colored keywords (mobile-friendly sizes) */}
+          <div className="mb-1">
+            <h1 className="font-extrabold drop-shadow-sm text-[1.8rem] sm:text-[2.2rem] leading-tight">
+              <span className="text-blue-300">בריכות</span>
+              <span className="mx-2 text-white/80">•</span>
+              <span className="text-emerald-300">גינון</span>
+              <span className="mx-2 text-white/80">•</span>
+              <span className="text-white">ניקיון</span>
+            </h1>
+          </div>
+          {/* Sub-headline */}
+          <h2 className="text-[1.6rem] sm:text-[2rem] font-extrabold text-white drop-shadow-sm mb-2">הכל במקום אחד</h2>
+          <div className="flex gap-3 mt-2">
             <a href="#diagnosis" className="btn btn-cta-primary">
               <i className="fas fa-camera"></i>
               אבחון מהיר
@@ -82,11 +92,11 @@ app.get('/', (c) => {
           <div className="mt-8 grid grid-cols-3 gap-3 text-center">
             <div className="pill text-slate-800">
               <div className="text-2xl font-bold" data-counter data-target="10">0</div>
-              <div className="text-sm">שנות ניסיון</div>
+              <div className="text-sm">מעל 10 שנות ניסיון</div>
             </div>
             <div className="pill text-slate-800">
               <div className="text-2xl font-bold" data-counter data-target="500">0</div>
-              <div className="text-sm">לקוחות מרוצים</div>
+              <div className="text-sm">יותר מ 500 לקוחות מרוצים</div>
             </div>
             <div className="pill text-slate-800">
               <div className="text-2xl font-bold">24/7</div>

@@ -92,8 +92,8 @@ html[dir="rtl"] body { direction: rtl; }
 .btn-primary:hover { background: #1d4ed8; }
 .btn-accent { background: #10b981; color: #fff; }
 .btn-accent:hover { background: #059669; }
-/* Header CTA pill */
-.btn-cta-header { background: rgba(255,255,255,0.18); color:#fff; border:1px solid rgba(255,255,255,0.45); border-radius:9999px; padding: .5rem .9rem; }
+/* Header CTA pill - tighter capsule and spacing */
+.btn-cta-header { background: rgba(255,255,255,0.18); color:#fff; border:1px solid rgba(255,255,255,0.45); border-radius:1rem; padding: .35rem .6rem; }
 .btn-cta-header:hover { background: rgba(255,255,255,0.28); }
 /* Primary/secondary CTA used in hero */
 .btn-cta-primary { background:#2563eb; color:#fff; border-radius:.75rem; }
