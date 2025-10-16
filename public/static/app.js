@@ -4,6 +4,7 @@
   let allowMockAuth = false;
   const MOCK_TOKEN_KEY = 'mock_token';
   let supaClient = null;
+  let portalRefreshBound = false;
   // Smooth counters
   const counters = document.querySelectorAll('[data-counter]');
   const ease = (t) => 1 - Math.pow(1 - t, 3);
@@ -85,6 +86,7 @@
       const anon = cfg?.supabase?.anon;
       if (!url || !anon || !window.supabase) return null;
       supaClient = window.supabase.createClient(url, anon, { auth: { storageKey: 'watn-auth' } });
+      try { supaClient.auth.onAuthStateChange((_event,_session)=>{ try{ window.dispatchEvent(new Event('portal-refresh')); window.dispatchEvent(new Event('cabinet-refresh')); } catch(_){} }); } catch {}
       return supaClient;
     } catch { return null; }
   }
@@ -147,7 +149,7 @@
 
     async function refreshPortal() {
       // Allow external triggers
-      window.addEventListener('portal-refresh', async ()=> { await refreshPortal(); });
+      if (!portalRefreshBound) { window.addEventListener('portal-refresh', async ()=> { await refreshPortal(); }); portalRefreshBound = true; }
       let user = null;
       try {
         const res = await client.auth.getUser();
@@ -668,7 +670,6 @@
     try {
       const els = document.querySelectorAll('.reveal');
       if (!('IntersectionObserver' in window) || !els || els.length === 0) {
-        // If not supported, show immediately
         els.forEach(el => el.classList.add('in-view'));
         return;
       }
@@ -676,12 +677,30 @@
         entries.forEach(entry => {
           if (entry.isIntersecting) {
             entry.target.classList.add('in-view');
-            // Optional: unobserve after first reveal for performance
             io.unobserve(entry.target);
           }
         });
       }, { root: null, rootMargin: '0px 0px -10% 0px', threshold: 0.1 });
       els.forEach(el => io.observe(el));
+
+      // Handle direct hash navigation: ensure target’s ancestors are visible and scrolled
+      function revealHashTarget(){
+        const id = (location.hash || '').replace('#','');
+        if (!id) return;
+        // Unhide panels if the hash points to a panel section
+        const panel = document.getElementById('panel-' + id) || document.getElementById(id);
+        if (panel && panel.classList.contains('hidden')) {
+          try { panel.classList.remove('hidden'); } catch {}
+        }
+        // Trigger scroll to section when hash changes so IO can fire
+        const sec = document.getElementById(id) || panel;
+        if (sec && typeof sec.scrollIntoView === 'function') {
+          sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+      // On load (if there is a hash) and on hash changes
+      if (location.hash) revealHashTarget();
+      window.addEventListener('hashchange', revealHashTarget);
     } catch {}
   })();
 
@@ -740,52 +759,97 @@
     const client = await (typeof supa === 'function' ? supa() : null);
     if (!client) return;
 
-    const sess = await client.auth.getSession();
-    const uid = sess?.data?.session?.user?.id;
-    if (!uid) { signedOutEl?.classList.remove('hidden'); appEl?.classList.add('hidden'); return; }
-    signedOutEl?.classList.add('hidden'); appEl?.classList.remove('hidden');
+    // Ensure cabinet reacts to auth changes and initial state
+    async function ensureAuthAndLoad(){
+      try {
+        const s = await client.auth.getSession();
+        const uidNow = s?.data?.session?.user?.id;
+        if (!uidNow) {
+          signedOutEl?.classList.remove('hidden');
+          appEl?.classList.add('hidden');
+          if (listEl) listEl.innerHTML = '';
+          return;
+        }
+        signedOutEl?.classList.add('hidden');
+        appEl?.classList.remove('hidden');
+        await load();
+      } catch {}
+    }
+    try { window.addEventListener('cabinet-refresh', ensureAuthAndLoad); } catch {}
+    await ensureAuthAndLoad();
 
-    const defaults = [
-      { key: 'cal_hypo_65', name: 'כלור גרגרים Cal-Hypo 65%', type: 'chemicals', unit:'ק"ג', min: 5, max: 15 },
-      { key: 'muriatic_33', name: 'חומצה מוריאטית 33%', type: 'chemicals', unit:'ליטר', min: 2, max: 4 },
-      { key: 'salt_chlorinator', name: 'מלח לכלורינטור', type: 'chemicals', unit:'ק"ג', min: 10, max: 50 },
-      { key: 'leaf_net', name: 'רשת לאיסוף עלים', type: 'tools', unit:'יח׳', min: 1, max: 2 },
-      { key: 'oring_50mm', name: 'O-Ring 50mm', type: 'parts', unit:'יח׳', min: 5, max: 20 },
-      { key: 'nitrile_gloves', name: 'כפפות ניטריל', type: 'tools', unit:'זוגות', min: 8, max: 20 }
-    ];
+    // Add item form wiring
+    const addForm = document.getElementById('cabinetAddForm');
+    if (addForm) {
+      const nameEl = document.getElementById('cab_name');
+      const typeEl = document.getElementById('cab_type');
+      const unitEl = document.getElementById('cab_unit');
+      const minEl = document.getElementById('cab_min');
+      const statusEl = document.getElementById('cab_add_status');
+      addForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = (nameEl?.value || '').trim();
+        const category = (typeEl?.value || 'chemicals');
+        const unit = (unitEl?.value || 'גרם').trim() || 'גרם';
+        const min = parseFloat((minEl?.value || '0'));
+        if (!name) { if (statusEl) statusEl.textContent = 'נא להזין שם פריט'; return; }
+        try {
+          const s2 = await client.auth.getSession();
+          const uidNow = s2?.data?.session?.user?.id;
+          if (!uidNow) { if (statusEl) statusEl.textContent = 'יש להתחבר'; return; }
+          const slug = name.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_\u0590-\u05FF-]/gi,'').slice(0,24);
+          const key = `itm_${slug}_${Math.random().toString(36).slice(2,7)}`;
+          const { data, error } = await client
+            .from('pool_cabinet_items')
+            .insert([{ user_id: uidNow, key, name, category, unit, qty: 0, min_qty: isNaN(min)?0:min, notes: null }])
+            .select()
+            .single();
+          if (statusEl) statusEl.textContent = error ? ('שגיאה: ' + error.message) : 'נוסף';
+          if (!error) { if (nameEl) nameEl.value=''; if (minEl) minEl.value=''; if (unitEl) unitEl.value='גרם'; await ensureAuthAndLoad(); }
+        } catch { if (statusEl) statusEl.textContent = 'שגיאת רשת'; }
+      });
+    }
+
+    const defaults = [];
 
     async function save(item){
       try {
-        await client.from('pool_cabinet').upsert({
-          user_id: uid,
-          key: item.key,
-          qty: item.qty,
-          threshold: item.threshold,
-          notes: item.notes
-        });
+        const identifier = (item && (item.id ?? item.key));
+        const column = (item && (item.id !== undefined && item.id !== null)) ? 'id' : 'key';
+        await client
+          .from('pool_cabinet_items')
+          .update({
+            name: item.name,
+            category: item.category,
+            unit: item.unit || 'גרם',
+            qty: item.qty,
+            min_qty: item.min_qty,
+            notes: item.notes || null
+          })
+          .eq(column, identifier);
       } catch {}
     }
 
     function levelClass(item){
       if (item.qty <= 0) return 'bg-red-50 border-red-200';
-      if (item.qty < item.threshold) return 'bg-amber-50 border-amber-200';
+      if (item.qty < (item.min_qty || 0)) return 'bg-amber-50 border-amber-200';
       return 'bg-emerald-50 border-emerald-200';
     }
 
     function levelTag(item){
       if (item.qty <= 0) return '<span class="text-red-700 text-xs">חסר</span>';
-      if (item.qty < item.threshold) return '<span class="text-amber-700 text-xs">נמוך</span>';
+      if (item.qty < (item.min_qty || 0)) return '<span class="text-amber-700 text-xs">נמוך</span>';
       return '<span class="text-emerald-700 text-xs">מלא</span>';
     }
 
     function badgeFor(it){
-      return it.type==='chemicals' ? '<span class="badge badge-chem"><i class="fas fa-flask"></i> כימיקלים</span>' :
-             it.type==='tools' ? '<span class="badge badge-tool"><i class="fas fa-wrench"></i> כלים</span>' :
+      return it.category==='chemicals' ? '<span class="badge badge-chem"><i class="fas fa-flask"></i> כימיקלים</span>' :
+             it.category==='tools' ? '<span class="badge badge-tool"><i class="fas fa-wrench"></i> כלים</span>' :
              '<span class="badge badge-part"><i class="fas fa-cog"></i> חלקים</span>';
     }
 
     function pct(it){
-      const denom = Math.max(1, it.threshold||1);
+      const denom = Math.max(1, (it.min_qty||1));
       return Math.min(100, Math.round((Math.max(0,it.qty||0) / denom) * 100));
     }
 
@@ -793,7 +857,7 @@
       const alertsEl = document.getElementById('cabinetAlerts');
       if (!alertsEl) return;
       const missing = items.filter(i => (i.qty||0) <= 0);
-      const low = items.filter(i => (i.qty||0) > 0 && (i.qty||0) < (i.threshold||0));
+      const low = items.filter(i => (i.qty||0) > 0 && (i.qty||0) < (i.min_qty||0));
       if (missing.length===0 && low.length===0) { alertsEl.innerHTML = ''; return; }
       alertsEl.innerHTML = `
         <div class="alert">
@@ -805,15 +869,16 @@
 
     function render(items){
       renderAlerts(items);
+      if (!items || items.length === 0) { listEl.innerHTML = '<div class="text-sm text-slate-600">אין פריטים עדיין — הוסיפו פריט בטופס למעלה.</div>'; return; }
       listEl.innerHTML = items.map(it => `
         <div class="rounded-xl border p-3 ${levelClass(it)}">
           <div class="flex items-center justify-between">
             <div>
               <div class="font-semibold">${it.name}</div>
               <div class="text-xs text-slate-500 flex items-center gap-2">${badgeFor(it)}
-                <span>מלאי נוכחי: <b>${it.qty}</b> ${it.unit}</span>
+                <span>מלאי נוכחי: <b>${it.qty}</b> ${it.unit || ''}</span>
                 <span>מינימום:</span>
-                <input class="border rounded px-2 py-1 text-xs w-16" type="number" min="0" value="${it.threshold}" data-thr="${it.key}" />
+                <input class="border rounded px-2 py-1 text-xs w-16" type="number" min="0" step="0.01" value="${it.min_qty || 0}" data-thr="${it.id ?? it.key}" />
               </div>
             </div>
             <div>${levelTag(it)}</div>
@@ -822,51 +887,67 @@
             <div class="progress"><span style="width:${pct(it)}%;"></span></div>
           </div>
           <div class="mt-2 flex items-center gap-2">
-            <button class="btn" data-dec="${it.key}">-</button>
-            <span class="text-sm w-10 text-center" data-qty="${it.key}">${it.qty}</span>
-            <button class="btn" data-inc="${it.key}">+</button>
-            ${ (it.qty||0) < (it.threshold||0) ? `<button class="btn btn-accent ml-auto" data-order="${it.key}">הזן הזמנה</button>` : `` }
+            <button class="btn" data-dec="${it.id ?? it.key}">-</button>
+            <span class="text-sm w-10 text-center" data-qty="${it.id ?? it.key}">${it.qty}</span>
+            <button class="btn" data-inc="${it.id ?? it.key}">+</button>
+            ${ (it.qty||0) < (it.min_qty||0) ? `<button class="btn btn-accent ml-auto" data-order="${it.id ?? it.key}">הזן הזמנה</button>` : `` }
           </div>
         </div>
       `).join('');
 
       // Wire inc/dec/order/threshold
       items.forEach(it => {
-        const dec = listEl.querySelector(`[data-dec="${it.key}"]`);
-        const inc = listEl.querySelector(`[data-inc="${it.key}"]`);
-        const qEl = listEl.querySelector(`[data-qty="${it.key}"]`);
-        const order = listEl.querySelector(`[data-order="${it.key}"]`);
-        const thr = listEl.querySelector(`[data-thr="${it.key}"]`);
-        dec?.addEventListener('click', async ()=>{ it.qty = Math.max(0, (it.qty||0)-1); qEl.textContent = it.qty; await save(it); load(); });
-        inc?.addEventListener('click', async ()=>{ it.qty = (it.qty||0)+1; qEl.textContent = it.qty; await save(it); load(); });
-        order?.addEventListener('click', ()=>{ alert('פתיחת הזמנה (דמו). בעתיד: חיבור ל-Stripe/ספקים.'); });
-        thr?.addEventListener('change', async ()=>{ const v = parseInt(thr.value||'0',10); it.threshold = isNaN(v)?0:Math.max(0,v); await save(it); load(); });
+        const idKey = (it.id ?? it.key);
+        const dec = listEl.querySelector(`[data-dec="${idKey}"]`);
+        const inc = listEl.querySelector(`[data-inc="${idKey}"]`);
+        const qEl = listEl.querySelector(`[data-qty="${idKey}"]`);
+        const order = listEl.querySelector(`[data-order="${idKey}"]`);
+        const thr = listEl.querySelector(`[data-thr="${idKey}"]`);
+        dec?.addEventListener('click', async ()=>{ it.qty = Math.max(0, (it.qty||0)-1); if (qEl) qEl.textContent = it.qty; await save(it); load(); });
+        inc?.addEventListener('click', async ()=>{ it.qty = (it.qty||0)+1; if (qEl) qEl.textContent = it.qty; await save(it); load(); });
+        order?.addEventListener('click', ()=>{ alert('Order creation (demo).'); });
+        thr?.addEventListener('change', async ()=>{ const v = parseFloat(thr.value||'0'); it.min_qty = isNaN(v)?0:Math.max(0,v); await save(it); load(); });
       });
     }
 
     async function load(){
       let rows = [];
       try {
-        const { data } = await client.from('pool_cabinet').select('*').eq('user_id', uid);
+        const s = await client.auth.getSession();
+        const uidNow = s?.data?.session?.user?.id;
+        if (!uidNow) { render([]); return; }
+        const { data } = await client.from('pool_cabinet_items').select('*').eq('user_id', uidNow);
         rows = Array.isArray(data) ? data : [];
       } catch { rows = []; }
-      const map = new Map(rows.map(r => [r.key, r]));
-      const merged = defaults.map(d => ({ ...d, qty: map.get(d.key)?.qty ?? 0, threshold: map.get(d.key)?.threshold ?? d.min, notes: map.get(d.key)?.notes ?? '' }));
-      render(merged);
+      render(rows);
     }
 
-    // Filter buttons
+    // Filter buttons with active state
+    function setActiveCabinetFilter(type){
+      document.querySelectorAll('[data-cabinet-filter]').forEach(b => {
+        const t = b.getAttribute('data-cabinet-filter');
+        if (t === type) b.classList.add('active'); else b.classList.remove('active');
+      });
+    }
     document.querySelectorAll('[data-cabinet-filter]').forEach(btn => {
       btn.addEventListener('click', async ()=>{
         const type = btn.getAttribute('data-cabinet-filter');
-        const { data } = await client.from('pool_cabinet').select('*').eq('user_id', uid);
-        const map = new Map((data||[]).map(r => [r.key, r]));
-        const merged = defaults.map(d => ({ ...d, qty: map.get(d.key)?.qty ?? 0, threshold: map.get(d.key)?.threshold ?? d.min, notes: map.get(d.key)?.notes ?? '' }));
-        const filtered = type === 'all' ? merged : merged.filter(i => i.type === type);
+        setActiveCabinetFilter(type || 'all');
+        let rows = [];
+        try {
+          const s = await client.auth.getSession();
+          const uidNow = s?.data?.session?.user?.id;
+          if (uidNow) {
+            const { data } = await client.from('pool_cabinet_items').select('*').eq('user_id', uidNow);
+            rows = Array.isArray(data) ? data : [];
+          }
+        } catch {}
+        const filtered = type === 'all' ? rows : rows.filter(i => i.category === type);
         render(filtered);
       });
     });
 
+    setActiveCabinetFilter('all');
     await load();
   })();
 })();

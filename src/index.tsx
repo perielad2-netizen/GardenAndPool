@@ -31,24 +31,24 @@ app.get('/', (c) => {
     <main className="pb-24 sm:pb-0 page-snap-y">
       <header className="sticky top-0 z-30 backdrop-blur bg-white/10 border-b border-white/20">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-white/30 shadow-inner flex items-center justify-center text-white">
-              <i className="fas fa-water text-lg"></i>
-            </div>
+          <div className="flex items-center gap-4">
             <div className="leading-tight">
-              <div className="text-white font-extrabold text-xl tracking-tight drop-shadow-sm">מים <span className="text-green-300">וטבע</span></div>
-              <div className="text-white/85 text-[13px]">שירותי בריכות, גינון ונקיון מקצועי</div>
+              <div className="font-extrabold tracking-tight drop-shadow-md header-brand-glow text-[2.1rem] sm:text-[2.5rem] text-white">
+                מים
+                <span className="bg-gradient-to-r from-lime-300 to-emerald-500 bg-clip-text text-transparent"> וטבע</span>
+              </div>
+              <div className="brand-underline mt-1 mb-1"></div>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <nav className="hidden sm:flex items-center gap-5 text-white/90 text-sm">
               <a href="#services" className="hover:text-white transition">שירותים</a>
               <a href="#plans" className="hover:text-white transition">מנויים</a>
               <a href="#portal" className="hover:text-white transition">הפורטל שלי</a>
               <a href="#contact" className="hover:text-white transition">צור קשר</a>
             </nav>
-            <div id="headerAuthZone">
-              <a href="#auth" id="openAuthModal" className="btn btn-cta-header">
+            <div id="headerAuthZone" className="mt-1 sm:mt-0">
+              <a href="#auth" id="openAuthModal" className="btn btn-cta-header text-[11px] sm:text-sm px-2 py-[4px] sm:px-3 sm:py-2">
                 <i className="fas fa-user-lock"></i>
                 התחברות / הרשמה
               </a>
@@ -63,9 +63,19 @@ app.get('/', (c) => {
           <div className="absolute top-1/2 right-0 w-96 h-96 bg-cyan-200/30 rounded-full blur-3xl"></div>
         </div>
         <div className="max-w-5xl mx-auto px-4 py-10">
-          <h1 className="text-[2rem] sm:text-[2.6rem] font-extrabold text-white drop-shadow-sm mb-2">הכל במקום אחד</h1>
-          <p className="text-white/90 mb-6">בריכות • גינון • ניקיון — פתרון מקצועי ומיידי.</p>
-          <div className="flex gap-3">
+          {/* Hebrew headline with colored keywords (mobile-friendly sizes) */}
+          <div className="mb-1">
+            <h1 className="font-extrabold drop-shadow-sm text-[1.8rem] sm:text-[2.2rem] leading-tight">
+              <span className="text-blue-300">בריכות</span>
+              <span className="mx-2 text-white/80">•</span>
+              <span className="text-emerald-300">גינון</span>
+              <span className="mx-2 text-white/80">•</span>
+              <span className="text-white">ניקיון</span>
+            </h1>
+          </div>
+          {/* Sub-headline */}
+          <h2 className="text-[1.6rem] sm:text-[2rem] font-extrabold text-white drop-shadow-sm mb-2">הכל במקום אחד</h2>
+          <div className="flex gap-3 mt-2">
             <a href="#diagnosis" className="btn btn-cta-primary">
               <i className="fas fa-camera"></i>
               אבחון מהיר
@@ -79,11 +89,11 @@ app.get('/', (c) => {
           <div className="mt-8 grid grid-cols-3 gap-3 text-center">
             <div className="pill text-slate-800">
               <div className="text-2xl font-bold" data-counter data-target="10">0</div>
-              <div className="text-sm">שנות ניסיון</div>
+              <div className="text-sm">מעל 10 שנות ניסיון</div>
             </div>
             <div className="pill text-slate-800">
               <div className="text-2xl font-bold" data-counter data-target="500">0</div>
-              <div className="text-sm">לקוחות מרוצים</div>
+              <div className="text-sm">יותר מ 500 לקוחות מרוצים</div>
             </div>
             <div className="pill text-slate-800">
               <div className="text-2xl font-bold">24/7</div>
@@ -122,7 +132,7 @@ app.get('/', (c) => {
           {/* Panels */}
           <div id="panelsScroller" className="space-y-6">
             {/* Diagnosis */}
-            <div id="panel-diagnosis" className="card">
+            <div id="panel-diagnosis" className="card reveal">
               <div className="heading mb-2">אבחון מהיר באמצעות תמונה</div>
               <form id="diagnosisForm" className="space-y-3">
                 <input id="diagFile" type="file" name="image" accept="image/*" className="hidden" required />
@@ -143,7 +153,7 @@ app.get('/', (c) => {
             </div>
 
             {/* Scheduler */}
-            <div id="panel-scheduler" className="card hidden">
+            <div id="panel-scheduler" className="card hidden reveal">
               <div className="heading mb-2">תיאום טכנאי</div>
               <form id="schedulerForm" className="grid gap-3">
                 <div className="grid sm:grid-cols-2 gap-3">
@@ -184,11 +194,46 @@ app.get('/', (c) => {
             </div>
 
             {/* Cabinet */}
-            <div id="panel-cabinet" className="card hidden">
+            <div id="panel-cabinet" className="card hidden reveal">
               <div className="heading mb-2">ארון תחזוקה דיגיטלי</div>
               <p className="text-sm text-slate-600 mb-3">מעקב אחר חומרים, כלים וחלקי חילוף לתחזוקה שוטפת.</p>
               <div id="cabinetSignedOut" className="text-sm text-slate-600">יש להתחבר כדי לצפות ולהתעדכן.</div>
               <div id="cabinetApp" className="hidden">
+                {/* Add item form */}
+                <form id="cabinetAddForm" className="grid sm:grid-cols-4 gap-2 mb-3 items-end">
+                  <div>
+                    <label className="text-xs text-slate-600">שם פריט</label>
+                    <input id="cab_name" className="border rounded-lg px-3 py-2 w-full" placeholder="לדוגמה: כלור גרגירים" />
+                  </div>
+                  <div>
+                    <label className="text-xs text-slate-600">קטגוריה</label>
+                    <select id="cab_type" className="border rounded-lg px-3 py-2 w-full">
+                      <option value="chemicals">כימיקלים</option>
+                      <option value="tools">כלים</option>
+                      <option value="parts">חלקים</option>
+                    </select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-xs text-slate-600">מינימום</label>
+                      <input id="cab_min" type="number" min="0" step="0.01" className="border rounded-lg px-3 py-2 w-full" placeholder="0" />
+                    </div>
+                    <div>
+                      <label className="text-xs text-slate-600">יחידה</label>
+                      <select id="cab_unit" className="border rounded-lg px-3 py-2 w-full">
+                        <option value="גרם">גרם</option>
+                        <option value="ק&quot;ג">ק&quot;ג</option>
+                        <option value="ליטר">ליטר</option>
+                        <option value="סמ&quot;ק">סמ&quot;ק</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button type="submit" className="btn btn-primary whitespace-nowrap"><i className="fas fa-plus"></i> הוסף פריט</button>
+                    <span id="cab_add_status" className="text-xs text-slate-600"></span>
+                  </div>
+                </form>
+
                 <div id="cabinetAlerts" className="mb-3"></div>
                 <div className="flex items-center gap-2 mb-3 text-sm">
                   <button data-cabinet-filter="all" className="btn">הכל</button>
@@ -201,7 +246,7 @@ app.get('/', (c) => {
             </div>
 
             {/* Subscription (Pool) */}
-            <div id="panel-subscription" className="card hidden">
+            <div id="panel-subscription" className="card hidden reveal">
               <div className="heading mb-2">מנויים</div>
               <div className="grid sm:grid-cols-2 lg:grid-cols-2 gap-4">
                 {/* מנוי VIP */}
@@ -313,7 +358,7 @@ app.get('/', (c) => {
 
 
             {/* Smart Chat */}
-            <div id="panel-chat" className="card hidden">
+            <div id="panel-chat" className="card hidden reveal">
               <div className="heading mb-2">צ׳אט חכם</div>
               <div className="flex gap-2">
                 <input id="chatInput" className="flex-1 border rounded-lg px-3 py-2" placeholder="שאל שאלה על תחזוקת בריכה" />
@@ -326,7 +371,7 @@ app.get('/', (c) => {
 
 
             {/* Portal (read-only) */}
-            <div id="panel-portal" className="card hidden">
+            <div id="panel-portal" className="card hidden reveal">
               <div className="heading mb-2">הפורטל שלי</div>
               <div id="portalSignedOut" className="text-sm text-slate-600">יש להתחבר כדי לצפות בפרטים האישיים.</div>
               <div id="portalContent" className="hidden space-y-3">
