@@ -38,9 +38,6 @@ app.get('/', (c) => {
                 <span className="bg-gradient-to-r from-lime-300 to-emerald-500 bg-clip-text text-transparent"> וטבע</span>
               </div>
               <div className="brand-underline mt-1 mb-1"></div>
-              <div className="text-white/95 text-base sm:text-lg leading-tight bg-white/10 rounded-md px-2.5 py-1 inline-block font-medium">
-                שירותי בריכות, גינון ונקיון מקצועי
-              </div>
             </div>
           </div>
           <div className="flex items-center gap-4">
