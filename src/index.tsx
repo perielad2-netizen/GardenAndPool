@@ -33,7 +33,7 @@ app.get('/', (c) => {
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="leading-tight">
-              <div className="font-extrabold tracking-tight drop-shadow-md header-brand-glow text-3xl sm:text-4xl text-white">
+              <div className="font-extrabold tracking-tight drop-shadow-md header-brand-glow text-[2.1rem] sm:text-[2.5rem] text-white">
                 מים
                 <span className="bg-gradient-to-r from-lime-300 to-emerald-500 bg-clip-text text-transparent"> וטבע</span>
               </div>
